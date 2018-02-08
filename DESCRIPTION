@@ -4,8 +4,7 @@ Title: dplyr backend to the Hafvog Oracle database
 Version: 0.0.1.9000
 Date: 2018-02-08
 Authors@R:
-  c(person("Einar", "Hjorleifsson", email = "einarhjorleifsson@gmail.com",role = c("aut", "cre")),
-    person("Bjarki", "Elvarsson", email = "bjarki.elvarsson@hafogvatn.is",role = c("aut")))
+  c(person("Einar", "Hjorleifsson", email = "einarhjorleifsson@gmail.com",role = c("aut", "cre")))
 Maintainer: Einar Hjorleifsson <einar.hjorleifsson@gmail.com>
 Description: Database utilities for MFRI db's
 Depends:
