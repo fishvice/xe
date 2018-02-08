@@ -8,16 +8,11 @@ Authors@R:
 Maintainer: Einar Hjorleifsson <einar.hjorleifsson@gmail.com>
 Description: Database utilities for MFRI db's
 Depends:
-    R (>= 3.1.1),
-    tidyverse,
-    ROracle
+    R (>= 3.1.1)
 Imports:
     dplyr,
-    dbplyr,
-    geo,
     magrittr,
-    mar,
-    stats
+    mar
 License: GPL (>= 2)
 LazyData: TRUE
 URL: http://github.com/fishvice/xe
