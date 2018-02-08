@@ -1,0 +1,30 @@
+Package: xe
+Type: Package
+Title: dplyr backend to the Hafvog Oracle database
+Version: 0.0.1.9000
+Date: 2018-02-08
+Authors@R:
+  c(person("Einar", "Hjorleifsson", email = "einarhjorleifsson@gmail.com",role = c("aut", "cre")),
+    person("Bjarki", "Elvarsson", email = "bjarki.elvarsson@hafogvatn.is",role = c("aut")))
+Maintainer: Einar Hjorleifsson <einar.hjorleifsson@gmail.com>
+Description: Database utilities for MFRI db's
+Depends:
+    R (>= 3.1.1),
+    tidyverse,
+    ROracle
+Imports:
+    dplyr,
+    dbplyr,
+    geo,
+    magrittr,
+    mar,
+    stats
+License: GPL (>= 2)
+LazyData: TRUE
+URL: http://github.com/fishvice/xe
+BugReports: http://github.com/xe/mar/issues
+Suggests:
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
+RoxygenNote: 6.0.1
