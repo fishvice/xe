@@ -19,17 +19,18 @@ Installing:
 devtools::install_github("fishvice/xe",  dependencies = FALSE, args='--no-multiarch')
 ```
 
-
-```r
-con <- connect_xe(user = "xxxx")
-```
-
-and then buisness as usual:
+connection to the xe would be:
 
 
 ```r
 library(mar)
 library(xe)
+con <- connect_xe(user = "xxxx")
+```
+
+and then buisness as usual:
+
+```r
 lesa_stodvar(con)
 lesa_lengdir(con)
 lesa_kvarnir(con)
