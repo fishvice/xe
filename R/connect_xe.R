@@ -2,6 +2,8 @@
 #'
 #' bla, bla, bla, ...
 #'
+#' @param user XX
+#' @param password XX
 #' @export
 #'
 connect_xe <- function(user, password) {

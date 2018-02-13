@@ -6,13 +6,18 @@ Date: 2018-02-08
 Authors@R:
   c(person("Einar", "Hjorleifsson", email = "einarhjorleifsson@gmail.com",role = c("aut", "cre")))
 Maintainer: Einar Hjorleifsson <einar.hjorleifsson@gmail.com>
-Description: Database utilities for MFRI db's
+Description: Database utilities for MFRI xe-database
 Depends:
-    R (>= 3.1.1)
+    R (>= 3.1.1),
+    tidyverse,
+    ROracle
 Imports:
+    DBI,
     dplyr,
+    dbplyr,
+    geo,
     magrittr,
-    mar
+    stats
 License: GPL (>= 2)
 LazyData: TRUE
 URL: http://github.com/fishvice/xe
