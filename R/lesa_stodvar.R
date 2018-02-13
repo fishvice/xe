@@ -28,12 +28,6 @@ lesa_stodvar <- function(con) {
 
   d1 %>%
     dplyr::union(d2) %>%
-    rename(lon1 = kastad_v_lengd,
-           lon2 = hift_v_lengd,
-           lat1 = kastad_n_breidd,
-           lat2 = hift_n_breidd) %>%
-    geoconvert(col.names = c("lat1", "lon1")) %>%
-    geoconvert(col.names = c("lat2", "lon2")) %>%
     dplyr::mutate(index = reitur * 100 + tognumer)
 
 }
