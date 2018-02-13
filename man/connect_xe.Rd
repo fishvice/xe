@@ -6,6 +6,11 @@
 \usage{
 connect_xe(user, password)
 }
+\arguments{
+\item{user}{XX}
+
+\item{password}{XX}
+}
 \description{
 bla, bla, bla, ...
 }
