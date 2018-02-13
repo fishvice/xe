@@ -32,8 +32,8 @@ lesa_stodvar <- function(con) {
            lon2 = hift_v_lengd,
            lat1 = kastad_n_breidd,
            lat2 = hift_n_breidd) %>%
-    mar:::geoconvert(col.names = c("lat1", "lon1")) %>%
-    mar:::geoconvert(col.names = c("lat2", "lon2")) %>%
+    geoconvert(col.names = c("lat1", "lon1")) %>%
+    geoconvert(col.names = c("lat2", "lon2")) %>%
     dplyr::mutate(index = reitur * 100 + tognumer)
 
 }
