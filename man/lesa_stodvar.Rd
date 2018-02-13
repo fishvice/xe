@@ -10,5 +10,5 @@ lesa_stodvar(con)
 \item{con}{XX}
 }
 \description{
-Some text
+The current form is just mimicry
 }
