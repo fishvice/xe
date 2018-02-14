@@ -12,7 +12,6 @@ lesa_stodvar <- function(con) {
     tbl_mar(con, "fiskar.stodvar") %>%
     dplyr::select(synis_id:heildarafli, synaflokkur) %>%
     dplyr::mutate(ar = to_number(to_char(dags, "YYYY"))) %>%
-    dplyr::filter(synaflokkur == 30, veidarfaeri == 73, ar < 2017) %>%
     dplyr::left_join(tbl_mar(con, "fiskar.togstodvar") %>%
                        dplyr::select(synis_id:eykt), by = "synis_id") %>%
     dplyr::left_join(tbl_mar(con, "fiskar.umhverfi") %>%
@@ -24,7 +23,6 @@ lesa_stodvar <- function(con) {
     mar::tbl_mar(con, "hafvog.stodvar") %>%
     dplyr::select(synis_id:heildarafli, synaflokkur) %>%
     dplyr::mutate(ar = to_number(to_char(dags, "YYYY"))) %>%
-    dplyr::filter(synaflokkur == 30, veidarfaeri == 73, ar == 2017) %>%
     dplyr::left_join(tbl_mar(con, "hafvog.togstodvar") %>%
                        dplyr::select(synis_id:eykt), by = "synis_id") %>%
     dplyr::left_join(tbl_mar(con, "hafvog.umhverfi") %>%
