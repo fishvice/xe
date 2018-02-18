@@ -6,10 +6,11 @@
 #'
 #' @export
 #'
-lesa_stodvar <- function(con) {
+lesa_stodvar <- function(con, Leidangur = "TB1-2017") {
 
   d1 <-
     tbl_mar(con, "fiskar.stodvar") %>%
+    dplyr::filter(leidangur != Leidangur) %>%
     dplyr::select(synis_id:heildarafli, synaflokkur) %>%
     dplyr::mutate(ar = to_number(to_char(dags, "YYYY"))) %>%
     dplyr::left_join(tbl_mar(con, "fiskar.togstodvar") %>%
@@ -21,6 +22,7 @@ lesa_stodvar <- function(con) {
 
   d2 <-
     mar::tbl_mar(con, "hafvog.stodvar") %>%
+    dplyr::filter(leidangur == Leidangur) %>%
     dplyr::select(synis_id:heildarafli, synaflokkur) %>%
     dplyr::mutate(ar = to_number(to_char(dags, "YYYY"))) %>%
     dplyr::left_join(tbl_mar(con, "hafvog.togstodvar") %>%
@@ -40,8 +42,9 @@ lesa_stodvar <- function(con) {
 
   d1 %>%
     dplyr::union(d2) %>%
-    dplyr::mutate(done = if_else(index %in% ind, "yes", "no")) %>%
-    collect(n = Inf)
+    dplyr::mutate(kastad_v_lengd = -kastad_v_lengd,
+                  hift_v_lengd = -hift_v_lengd,
+                  done = if_else(index %in% ind, "yes", "no"))
 
 
 }

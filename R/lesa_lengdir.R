@@ -28,7 +28,8 @@ lesa_lengdir <- function(con) {
     left_join(tbl_mar(con, "hafvog.numer") %>%
                 dplyr::mutate(r = ifelse(fj_talid==0 | is.na(fj_talid), 1, 1 + (fj_talid / ifelse(fj_maelt == 0 | is.na(fj_talid), 1, fj_maelt)))) %>%
                 dplyr::select(synis_id, tegund, r), by = c("synis_id", "tegund")) %>%
-    mutate(source = "hafvog")
+    mutate(synis_id = -synis_id,
+           source = "hafvog")
 
   d1 %>%
     dplyr::union(d2)
