@@ -68,16 +68,16 @@ read_smx_data <- function(con, id = 30, gid = 73, year.now = year(now()), dummy 
     collect(n = Inf) %>%
     geo::geoconvert(col.names = c("lat1", "lon1")) %>%
     geo::geoconvert(col.names = c("lat2", "lon2")) %>%
-    mutate(lon = lon1 + lon2 / 2,
-           lat = lat1 + lat2 / 2)
+    mutate(lon = (lon1 + lon2) / 2,
+           lat = (lat1 + lat2) / 2)
 
   st <<-
     st %>%
     collect(n = Inf) %>%
     geo::geoconvert(col.names = c("lat1", "lon1")) %>%
     geo::geoconvert(col.names = c("lat2", "lon2")) %>%
-    mutate(lon = lon1 + lon2 / 2,
-           lat = lat1 + lat2 / 2)
+    mutate(lon = (lon1 + lon2) / 2,
+           lat = (lat1 + lat2) / 2)
 
   stadlar <<- lesa_stadla(con) %>%
     filter(veidarfaeri_id == gid,
