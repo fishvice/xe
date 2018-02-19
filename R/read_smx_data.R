@@ -6,7 +6,7 @@ read_smx_data <- function(con, id = 30, gid = 73, year.now = year(now()), dummy 
   std.towlength <- 4             # Standard tow length is 4 nautical miles
 
   st <-
-    lesa_stodvar(con) %>%
+    lesa_stodvar(con, Leidangur = "TB1-2017") %>%
     filter(synaflokkur == id,
            veidarfaeri == gid)
 
