@@ -42,6 +42,18 @@ read_smx_data <- function(con, id = 30, gid = 73, year.now = year(now()), dummy 
            b.std  = ifelse(is.na(n.std), 0, n) * 0.01 * lengd^3/1e3) %>%
     collect(n = Inf)
 
+  kv <<-
+    st %>%
+    select(synis_id, ar, source) %>%
+    left_join(lesa_kvarnir(con), by = c("synis_id", "source")) %>%
+    collect(n = Inf)
+
+  nu <<-
+    st %>%
+    select(synis_id, ar, source) %>%
+    left_join(lesa_numer(con), by = c("synis_id", "source")) %>%
+    collect(n = Inf)
+
   st <-
     st %>%
     rename(lon1 = kastad_v_lengd,
@@ -79,11 +91,15 @@ read_smx_data <- function(con, id = 30, gid = 73, year.now = year(now()), dummy 
     mutate(lon = (lon1 + lon2) / 2,
            lat = (lat1 + lat2) / 2)
 
-  stadlar <<- lesa_stadla(con) %>%
+  stadlar_rallstodvar <<- lesa_stadla_rallstodvar(con) %>%
     filter(veidarfaeri_id == gid,
            synaflokkur == id) %>%
     collect(n = Inf) %>%
     geo::geoconvert(col.names = c("kastad_v", "kastad_n")) %>%
     geo::geoconvert(col.names = c("hift_v",   "hift_n"))
+
+  stadlar_tegundir <<- lesa_stadla_tegund_smb(con) %>% collect(n = Inf)
+
+  stadlar_lw <<- lesa_stadla_lw(con) %>% collect(n = Inf)
 
 }

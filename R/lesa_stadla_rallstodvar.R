@@ -6,7 +6,7 @@
 #'
 #' @export
 #'
-lesa_stadla <- function(con) {
+lesa_stadla_rallstodvar <- function(con) {
 
   tbl_mar(con, "hafvog.sti_rallstodvar") %>%
     left_join(tbl_mar(con, "hafvog.sti_leidangrar"), by = "leidangur_id") %>%

@@ -13,6 +13,7 @@ lesa_kvarnir <- function(con) {
     mutate(source = "fiskar") %>%
     dplyr::union(tbl_mar(con, "hafvog.kvarnir") %>%
                    dplyr::select(synis_id:kynfaeri, lifur, magi, syking = sy) %>%
-                   mutate(source = "hafvog"))
+                   mutate(synis_id = -synis_id,
+                          source = "hafvog"))
 
 }
