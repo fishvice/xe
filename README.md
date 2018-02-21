@@ -6,9 +6,6 @@ output:
 ---
 
 
-```r
-knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
-```
 
 Communicating with hafvog
 
@@ -23,7 +20,9 @@ connection to the xe would be:
 
 
 ```r
-library(mar)
+library(lubridate)
+library(tidyverse)
+
 library(xe)
 con <- connect_xe(user = "xxxx")
 ```
@@ -37,7 +36,21 @@ lesa_kvarnir(con)
 lesa_numer(con)
 ```
 
+Gathering all smb data into R can be done via:
 
+```r
+read_smx_data(con, Leidangur = "TB1-2017", year.now = 2017)  # last two arguments a temporary fix
+save(st, st.done, stadlar_lw, stadlar_rallstodvar, stadlar_tegundir,
+     fisktegundir, le, kv, nu, file = "smb.rda")
+```
+
+Update also these libraries if you want to use the SMB dashboard:
+
+```r
+install.packages("shiny")
+install.packages("leaflet")
+install.packages("flexdashboard")
+```
 
 
 
