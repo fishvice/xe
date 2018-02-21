@@ -1,12 +1,14 @@
 #' @export
-read_smx_data <- function(con, id = 30, gid = 73, year.now = year(now()), dummy = FALSE) {
+read_smx_data <- function(con, Leidangur, id = 30, gid = 73) {
+
+  if(missing(Leidangur)) stop("You need to specify the current cruise name")
 
   min.towlength <- 2             # Minimum "acceptable" towlength
   max.towlength <- 8             # Maximum "acceptable" towlength
   std.towlength <- 4             # Standard tow length is 4 nautical miles
 
   st <-
-    lesa_stodvar(con, Leidangur = "TB1-2017") %>%
+    lesa_stodvar(con, Leidangur = Leidangur) %>%
     filter(synaflokkur == id,
            veidarfaeri == gid)
 
@@ -101,5 +103,11 @@ read_smx_data <- function(con, id = 30, gid = 73, year.now = year(now()), dummy 
   stadlar_tegundir <<- lesa_stadla_tegund_smb(con) %>% collect(n = Inf)
 
   stadlar_lw <<- lesa_stadla_lw(con) %>% collect(n = Inf)
+
+  fisktegundir <<-
+    tbl_mar(con, "hafvog.fisktegundir") %>%
+    select(tegund, heiti) %>%
+    arrange(tegund) %>%
+    collect()
 
 }
