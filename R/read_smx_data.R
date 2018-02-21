@@ -1,5 +1,5 @@
 #' @export
-read_smx_data <- function(con, Leidangur, id = 30, gid = 73) {
+read_smx_data <- function(con, Leidangur, id = 30, gid = 73, year.now = 2018) {
 
   if(missing(Leidangur)) stop("You need to specify the current cruise name")
 
@@ -16,12 +16,12 @@ read_smx_data <- function(con, Leidangur, id = 30, gid = 73) {
   # in test case, the 2017 data both xe.fiskar.stodvar
   #    and xe.hafvog.stodvar a dummy filter is applied here. Would
   #    not be needed once smb2018 is up.
-  if(dummy) {
-    st <-
-      st %>%
-      dplyr::filter((ar < year.now & source == "fiskar") |
-               (ar == year.now & source == "hafvog"))
-  }
+  #if(dummy) {
+  #  st <-
+  #    st %>%
+  #    dplyr::filter((ar < year.now & source == "fiskar") |
+  #             (ar == year.now & source == "hafvog"))
+  #}
   # ----------------------------------------------------------------
 
   le <<-
