@@ -4,6 +4,13 @@ output: flexdashboard::flex_dashboard
 runtime: shiny
 ---
 
+```{r, eval = FALSE}
+library(tidyverse)
+library(xe)
+con <- mar::connect_mar()
+read_smx_data(con, Leidangur = "TB1-2017")
+```
+
 ```{r global, include=FALSE}
 # load data in 'global' chunk so it can be shared by all users of the dashboard
 library(tidyverse)
