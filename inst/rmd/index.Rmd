@@ -1,0 +1,177 @@
+---
+title: "Mælaborð hins íslenzka vorralls"
+output: flexdashboard::flex_dashboard
+runtime: shiny
+---
+
+```{r global, include=FALSE}
+# load data in 'global' chunk so it can be shared by all users of the dashboard
+library(tidyverse)
+library(leaflet)
+load("smb_dashboard.rda")
+
+Tegund <- sort(unique(by.tegund.lengd.ar$tegund))
+x <- 
+  fisktegundir %>% 
+  filter(tegund %in% Tegund) %>% 
+  mutate(val = paste(tegund, heiti)) %>% 
+  select(tegund, val)
+my.list <- as.list(x$tegund)
+names(my.list) <- x$val
+```
+
+Sidebar {.sidebar}
+=====================================
+
+```{r}
+selectInput(inputId = "Species", label = "Species:",
+            choices = my.list, selected = 1)
+
+
+radioButtons(inputId = "Type", label = "Type", 
+             choices = list("Numbers", "Weight"), 
+             selected = list("Numbers"))
+```
+
+Dót til prufu - um kóðann sem er á bak við má fræðast um nánar [hér](http://www.hafro.is/~einarhj/gagnakvorn).
+
+Some stuff
+=====================================  
+
+Column 
+-------------------------------------
+
+### By length
+
+```{r}
+renderPlot({
+  if(input$Type == "Numbers") 
+    {
+  ggplot() +
+    geom_ribbon(data = by.tegund.lengd.ar.m %>% 
+                  filter(tegund == as.numeric(input$Species)),
+                aes(lengd, ymax = n.std, ymin = 0), fill = "grey") +
+    geom_line(data = by.tegund.lengd.ar  %>% 
+                filter(tegund == as.numeric(input$Species),
+                       ar %in% 2010:2018),
+              aes(lengd, n.std)) +
+    facet_grid(ar ~ .) +
+    labs(x = NULL, y = NULL)
+  } else {
+    ggplot() +
+      geom_ribbon(data = by.tegund.lengd.ar.m %>% 
+                    filter(tegund == as.numeric(input$Species)),
+                  aes(lengd, ymax = b.std, ymin = 0), fill = "grey") +
+      geom_line(data = by.tegund.lengd.ar  %>% 
+                  filter(tegund == as.numeric(input$Species),
+                         ar %in% 2010:2018),
+                aes(lengd, b.std)) +
+      facet_grid(ar ~ .) +
+      labs(x = NULL, y = NULL)
+  } 
+  
+})
+```
+
+
+Column 
+-------------------------------------
+
+### Mean catch - bootstrap with confidence limits
+
+```{r}
+renderPlot({
+  if(input$Type == "Numbers") 
+  {
+    by.station %>% 
+      filter(tegund == as.numeric(input$Species)) %>% 
+      ggplot(aes(ar, n.std)) +
+      stat_summary(fun.data = "mean_cl_boot") +
+      scale_x_continuous(breaks = seq(1985, 2015, by = 5)) +
+      xlim(1985, 2018) +
+      expand_limits(y = 0) +
+      labs(x = NULL, y = NULL)
+  } else {
+    by.station %>% 
+      filter(tegund == as.numeric(input$Species)) %>% 
+      ggplot(aes(ar, b.std)) +
+      stat_summary(fun.data = "mean_cl_boot") +
+      scale_x_continuous(breaks = seq(1985, 2015, by = 5)) +
+      xlim(1985, 2018) +
+      expand_limits(y = 0) +
+      labs(x = NULL, y = NULL)
+  }
+})
+```   
+
+
+### Catch per haul
+
+```{r}
+renderLeaflet({
+  
+  x0 <- by.station %>% filter(ar == 2017)
+  if(input$Type == "Numbers") {
+    x <- 
+      by.station %>% 
+      filter(ar == 2017, tegund == as.numeric(input$Species)) %>% 
+      arrange(-n.std)
+    skali <- 4 / max(x$n.std)
+    leaflet(x) %>% 
+      addTiles() %>% 
+      addCircles(data = x0, weight = 0.1, color = "red") %>% 
+      addCircles(weight = 1,
+                 popup = ~paste(round(n.std), "fiskar"),
+                 radius = ~n.std * skali * 1e4)
+  } else {
+    x <- 
+      by.station %>% 
+      filter(ar == 2017, tegund == as.numeric(input$Species)) %>% 
+      arrange(-b.std)
+    skali <- 4 / max(x$b.std)
+    leaflet(x) %>% 
+      addTiles() %>% 
+      addCircles(data = x0, weight = 0.1, color = "red") %>% 
+      addCircles(weight = 1,
+                 popup = ~paste(round(b.std), "kg"),
+                 radius = ~b.std * skali * 1e4)
+  }
+})
+```
+
+More stuff
+=====================================
+
+### Chart x
+    
+```{r}
+renderPlot({
+  if(input$Type == "Numbers") {
+    by.station %>% 
+      filter(ar %in% c(1985, 1990, 1995, 2000, 2005, 2010:2018),
+             tegund == as.numeric(input$Species)) %>% 
+      ggplot() +
+      geom_path(data = geo::island, aes(lon, lat)) +
+      geom_point(aes(lon, lat, size = n.std),
+                 alpha = 0.5, colour = "red") +
+      scale_size_area(max_size = 10) +
+      coord_quickmap(xlim = range(by.station$lon, na.rm = TRUE),
+                     ylim = range(by.station$lat, na.rm = TRUE)) +
+      labs(x = NULL, y = NULL) +
+      facet_wrap(~ ar, nrow = 3)
+  } else {
+    by.station %>% 
+      filter(ar %in% c(1985, 1990, 1995, 2000, 2005, 2010:2018),
+             tegund == as.numeric(input$Species)) %>% 
+      ggplot() +
+      geom_path(data = geo::island, aes(lon, lat)) +
+      geom_point(aes(lon, lat, size = b.std),
+                 alpha = 0.5, colour = "red") +
+      scale_size_area(max_size = 10) +
+      coord_quickmap(xlim = range(by.station$lon, na.rm = TRUE),
+                     ylim = range(by.station$lat, na.rm = TRUE)) +
+      labs(x = NULL, y = NULL) +
+      facet_wrap(~ ar, nrow = 3)
+  }
+})
+```

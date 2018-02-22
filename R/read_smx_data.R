@@ -1,5 +1,5 @@
 #' @export
-read_smx_data <- function(con, Leidangur, id = 30, gid = 73, year.now = 2018) {
+read_smx_data <- function(con, Leidangur, id = 30, gid = 73) {
 
   if(missing(Leidangur)) stop("You need to specify the current cruise name")
 
@@ -24,7 +24,7 @@ read_smx_data <- function(con, Leidangur, id = 30, gid = 73, year.now = 2018) {
   #}
   # ----------------------------------------------------------------
 
-  le <<-
+  le <-
     st %>%
     select(synis_id, ar, source, toglengd) %>%
     left_join(lesa_lengdir(con), by = c("synis_id", "source")) %>%
@@ -65,7 +65,7 @@ read_smx_data <- function(con, Leidangur, id = 30, gid = 73, year.now = 2018) {
 
   index.current <-
     st %>%
-    filter(ar == year.now) %>%
+    filter(source == "hafvog") %>%
     # test fix
     mutate(dd = to_number(to_char(dags, "DD")),
            mm = to_number(to_char(dags, "MM"))) %>%
@@ -76,7 +76,7 @@ read_smx_data <- function(con, Leidangur, id = 30, gid = 73, year.now = 2018) {
     pull()
 
   # only tows (index) that have so far been taken this year
-  st.done <<-
+  st.done <-
     st %>%
     filter(index %in% index.current) %>%
     collect(n = Inf) %>%
@@ -104,10 +104,58 @@ read_smx_data <- function(con, Leidangur, id = 30, gid = 73, year.now = 2018) {
 
   stadlar_lw <<- lesa_stadla_lw(con) %>% collect(n = Inf)
 
-  fisktegundir <<-
+  fisktegundir <-
     tbl_mar(con, "hafvog.fisktegundir") %>%
     select(tegund, heiti) %>%
     arrange(tegund) %>%
     collect()
 
+  by.tegund.lengd.ar <-
+    st.done %>%
+    select(synis_id) %>%
+    left_join(le) %>%
+    group_by(tegund, ar, lengd) %>%
+    summarise(n.std = sum(n.std, na.rm = TRUE),
+              b.std = sum(b.std, na.rm = TRUE)) %>%
+    ungroup()
+  x <-
+    by.tegund.lengd.ar %>%
+    group_by(tegund) %>%
+    summarise(n = n(),
+              l.min = min(lengd),
+              l.max = max(lengd))
+  res <- list()
+  for(i in 1:length(x$tegund)) {
+    res[[i]] <- expand.grid(tegund = x$tegund[i],
+                            lengd = x$l.min[i]:x$l.max[i],
+                            ar = unique(by.tegund.lengd.ar$ar))
+  }
+  x <- bind_rows(res) %>% as_tibble()
+
+  by.tegund.lengd.ar <-
+    x %>%
+    left_join(by.tegund.lengd.ar) %>%
+    mutate(n.std = ifelse(is.na(n.std), 0, n.std),
+           b.std = ifelse(is.na(b.std), 0, b.std))
+
+  by.tegund.lengd.ar.m <-
+    by.tegund.lengd.ar %>%
+    filter(ar %in% 2010:2018) %>%
+    group_by(tegund, lengd) %>%
+    summarise(n.year = n_distinct(ar),
+              n.std = sum(n.std, na.rm = TRUE) / n.year,
+              b.std = sum(b.std, na.rm = TRUE) / n.year) %>%
+    ungroup()
+
+  by.station <-
+    st.done %>%
+    select(synis_id, lon, lat, index) %>%
+    left_join(le) %>%
+    group_by(ar, index, lon, lat, tegund) %>%
+    summarise(n.std = sum(n.std, na.rm = TRUE),
+              b.std = sum(b.std, na.rm = TRUE)) %>%
+    ungroup()
+
+  save(by.tegund.lengd.ar, by.tegund.lengd.ar.m,
+       by.station, fisktegundir, file = "smb_dashboard.rda")
 }
