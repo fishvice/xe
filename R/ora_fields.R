@@ -1,3 +1,8 @@
+#' Title
+#'
+#' @param con XXX
+#' @param table XXX
+#'
 #' @export
 ora_fields <- function (con, table) {
 

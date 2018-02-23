@@ -4,10 +4,12 @@
 \alias{lesa_kvarnir}
 \title{Title}
 \usage{
-lesa_kvarnir(con)
+lesa_kvarnir(con, schema = "fiskar")
 }
 \arguments{
-\item{con}{XX}
+\item{con}{XXX}
+
+\item{schema}{XXX}
 }
 \description{
 Some text

@@ -4,10 +4,12 @@
 \alias{lesa_lengdir}
 \title{Title}
 \usage{
-lesa_lengdir(con)
+lesa_lengdir(con, schema = "fiskar")
 }
 \arguments{
 \item{con}{XXX}
+
+\item{schema}{XXX}
 }
 \description{
 Bla, bla, ...

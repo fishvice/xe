@@ -4,12 +4,12 @@
 \alias{lesa_stodvar}
 \title{Title}
 \usage{
-lesa_stodvar(con, Leidangur)
+lesa_stodvar(con, schema = "fiskar")
 }
 \arguments{
 \item{con}{XX}
 
-\item{Leidangur}{XX}
+\item{schema}{XX}
 }
 \description{
 The current form is just mimicry

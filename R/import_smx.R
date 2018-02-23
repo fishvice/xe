@@ -1,9 +1,15 @@
-library(tidyverse)
-library(xe)
-
-read_smx_data <- function(cruise = "TB1-2017", debug = 0) {
-
-  con <- mar::connect_mar()
+#' Title
+#'
+#' @param con XXX
+#' @param schema XXX
+#' @param id synaflokkur
+#' @param gid veidarfaeri
+#' @param cruise Heiti leiðangurs
+#' @param debug XXX
+#'
+#' @export
+import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
+                       cruise = "TB1-2017", debug = 0) {
 
   now.year <- lubridate::now() %>% lubridate::year()
   now.year <- now.year - debug
@@ -17,49 +23,45 @@ read_smx_data <- function(cruise = "TB1-2017", debug = 0) {
   for(i in 1:length(schema)) {
 
     st <-
-      tbl_mar(con, paste0(schema[[i]], ".stodvar")) %>%
-      filter(synaflokkur == 30, veidarfaeri == 73) %>%
-      left_join(tbl_mar(con, paste0(schema[i], ".togstodvar")) %>%
-                  select(synis_id, tognumer, toglengd))
+      lesa_stodvar(con, schema[i]) %>%
+      filter(synaflokkur %in% id, veidarfaeri %in% gid) %>%
+      select(synis_id, ar, leidangur, reitur, tognumer, toglengd)
 
     if(schema[i] == "fiskar") {
       st <-
         st %>%
-        filter(to_number(to_char(dags, "YYYY")) < now.year)
+        filter(ar < now.year)
     } else {
       st <-
         st %>%
-        filter(to_number(to_char(dags, "YYYY")) == now.year)
+        filter(ar == now.year)
     }
 
     nu.list[[i]] <-
       st %>%
-      select(synis_id) %>%
-      left_join(tbl_mar(con, paste0(schema[i], ".numer")) %>%
-                  mutate(fj_alls = fj_maelt + fj_talid) %>%
-                  select(synis_id, tegund, fj_maelt, fj_talid, fj_alls)) %>%
+      select(synis_id, ar) %>%
+      left_join(lesa_numer(con, schema[i])) %>%
+      mutate(fj_alls = fj_maelt + fj_talid) %>%
+      select(synis_id, ar, tegund, fj_maelt, fj_talid, fj_alls) %>%
       collect(n = Inf) %>%
+      filter(!is.na(tegund)) %>%
       complete(synis_id, tegund) %>%
-      replace_na(list(fj_maelt = 0, fj_talid = 0, fj_alls = 0)) %>%
-      mutate(source = schema[i])
+      replace_na(list(fj_maelt = 0, fj_talid = 0, fj_alls = 0))
 
     le.list[[i]] <-
       st %>%
-      select(synis_id) %>%
-      left_join(tbl_mar(con, paste0(schema[i], ".lengdir")) %>%
+      left_join(lesa_lengdir(con, schema[i]) %>%
                   group_by(synis_id, tegund, lengd) %>%
                   summarise(fjoldi = sum(fjoldi, na.rm = TRUE)) %>%
                   ungroup()) %>%
       collect(n = Inf) %>%
+      filter(!is.na(tegund)) %>%
       complete(synis_id, tegund) %>%
-      replace_na(list(lengd = 0, fjoldi = 0)) %>%
-      mutate(source = schema[i])
+      replace_na(list(lengd = 0, fjoldi = 0))
 
     st.list[[i]] <-
       st %>%
-      mutate(ar = to_number(to_char(dags, "YYYY"))) %>%
-      collect(n = Inf) %>%
-      mutate(source = schema[i])
+      collect(n = Inf)
 
     le.list[[i]] <-
       le.list[[i]] %>%
@@ -93,15 +95,3 @@ read_smx_data <- function(cruise = "TB1-2017", debug = 0) {
   st.done <<- st.done
 
 }
-read_smx_data(debug = 1)
-
-st.done %>%
-  select(synis_id) %>%
-  left_join(le) %>%
-  group_by(ar, tegund, synis_id) %>%
-  summarise(n.std = sum(n.std),
-            b.std = sum(b.std)) %>%
-  filter(tegund == 1) %>%
-  ggplot(aes(ar, n.std)) +
-  stat_summary(fun.data = "mean_cl_boot") +
-  expand_limits(y = 0)

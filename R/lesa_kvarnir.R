@@ -2,18 +2,15 @@
 #'
 #' Some text
 #'
-#' @param con XX
+#' @param con XXX
+#' @param schema XXX
 #'
 #' @export
 #'
-lesa_kvarnir <- function(con) {
+lesa_kvarnir <- function(con, schema = "fiskar") {
 
-  tbl_mar(con, "fiskar.kvarnir") %>%
+  tbl_mar(con, paste0(schema, ".kvarnir")) %>%
     dplyr::select(synis_id:kynfaeri, lifur, magi, syking = sy) %>%
-    mutate(source = "fiskar") %>%
-    dplyr::union(tbl_mar(con, "hafvog.kvarnir") %>%
-                   dplyr::select(synis_id:kynfaeri, lifur, magi, syking = sy) %>%
-                   mutate(synis_id = -synis_id,
-                          source = "hafvog"))
+    mutate(synis_id = if_else(schema == "fiskar", synis_id, -synis_id))
 
 }

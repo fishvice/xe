@@ -2,19 +2,16 @@
 #'
 #' Bla, bla,
 #'
-#' @param con
+#' @param con XXX
+#' @param schema XXX
 #'
 #' @export
 #'
-lesa_numer <- function(con) {
+lesa_numer <- function(con, schema = "fiskar") {
 
-  tbl_mar(con, "fiskar.numer") %>%
-    select(synis_id:fj_kvarnad, fj_talid:fj_magasyna) %>%
-    mutate(source = "fiskar") %>%
-    dplyr::union(tbl_mar(con, "hafvog.numer") %>%
-                   select(synis_id:fj_kvarnad, fj_talid:fj_magasyna) %>%
-                   mutate(synis_id = -synis_id,
-                          source = "hafvog"))
-
+  tbl_mar(con, paste0(schema, ".numer")) %>%
+    select(synis_id, tegund, fj_maelt, fj_talid, fj_kyngreint,
+           fj_vigtad, fj_magasyna) %>%
+    mutate(synis_id = if_else(schema == "fiskar", synis_id, -synis_id))
 
 }
