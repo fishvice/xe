@@ -5,11 +5,10 @@ runtime: shiny
 ---
 
 ```{r, eval = FALSE}
+#devtools::install_github("fishvice/xe",  dependencies = FALSE, args='--no-multiarch')
 library(tidyverse)
 library(xe)
-source("R/import_smx.R")
-#con <- connect_xe(user = "gagnasja")
-con <- mar::connect_mar()
+con <- connect_xe(user = "gagnasja")
 import_smx(con, cruise = "TB1-2017", debug = 1)
 ```
 

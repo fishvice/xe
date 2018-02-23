@@ -5,17 +5,18 @@ runtime: shiny
 ---
 
 ```{r, eval = FALSE}
+#devtools::install_github("fishvice/xe",  dependencies = FALSE, args='--no-multiarch')
 library(tidyverse)
 library(xe)
-con <- mar::connect_mar()
-read_smx_data(con, Leidangur = "TB1-2017")
+con <- connect_xe(user = "gagnasja")
+import_smx(con, cruise = "TB1-2017", debug = 1)
 ```
 
 ```{r global, include=FALSE}
 # load data in 'global' chunk so it can be shared by all users of the dashboard
 library(tidyverse)
 library(leaflet)
-load("smb_dashboard.rda")
+load("data/smb_dashboard.rda")
 
 Tegund <- sort(unique(by.tegund.lengd.ar$tegund))
 x <- 
@@ -128,7 +129,7 @@ renderLeaflet({
       addTiles() %>% 
       addCircles(data = x0, weight = 0.1, color = "red") %>% 
       addCircles(weight = 1,
-                 popup = ~paste(round(n.std), "fiskar"),
+                 popup = ~paste(n.std, "fiskar"),
                  radius = ~n.std * skali * 1e4)
   } else {
     x <- 
