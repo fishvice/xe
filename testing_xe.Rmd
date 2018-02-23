@@ -1,0 +1,250 @@
+---
+title: "Some hafvogs drills"
+output: 
+  html_document:
+    code_folding: hide
+    fig_height: 6
+    fig_width: 9
+---
+
+```{r setup}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+
+##### Preamble
+
+You only need to do once or when you want to install or later update the package:
+```{r, eval = FALSE}
+install.packages("tidyverse")
+install.packages("Hmisc")      # to do bootstrapping within R
+devtools::install_github("fishvice/xe",  dependencies = FALSE, args='--no-multiarch')
+```
+
+Each time you start a new R-session you need to call the following packages:
+```{r}
+library(geo)
+library(lubridate)
+library(xe)
+```
+
+Connection to Hafvog:
+```{r}
+#con <- xe::connect_xe(user = "gagnasja")
+con <- mar::connect_mar()
+```
+
+The ususal mar-connections (some slow because combining tables from two schemas):
+```{r, eval = FALSE}
+lesa_stodvar(con, Leidangur = "TB1-2017") %>% glimpse()
+lesa_lengdir(con) %>% glimpse()
+lesa_kvarnir(con) %>% glimpse()
+lesa_numer(con)   %>% glimpse()
+```
+
+Read in all data and store as local data.frame:
+```{r, eval = FALSE}
+read_smx_data(con, Leidangur = "TB1-2017", year.now = 2017)
+save(st, st.done, stadlar_lw, stadlar_rallstodvar, stadlar_tegundir,
+     fisktegundir, le, kv, nu, file = "smb.rda")
+st.now <- st.done %>% filter(ar == 2017)
+ls()
+```
+
+```{r}
+load("smb.rda")
+```
+
+The above fetches the following SMB datatables from the xe-database that is associated with Hafvog into your working environment:
+
+* **st**: The SMB station data
+* **st.done**: A subset of the above, containing the stations that have been taken in the current trip for each year.
+* **le**: The SMB length data
+* **kv**: The SMB individual calculation data (to be implemented)
+* **nu**: The SMB count data (to be implemented)
+
+The **le**-table contains the following additional fields:
+
+* **r**: A raising factor: (fjoldi_talid + fjoldi_maelt) / fjoldi_talid)
+* **n**: Raised number of fish: n = r * fjoldi
+* **b**: Raised weight of fish: b = n * 0.01 * lengd^3.00
+* **n.std**: Standardized number of fish: n.std = n * toglengd / 4
+    - Note that toglengd has been "trimmed"
+* **b.std**: Standardized weight of fish: b.std = n.std * 0.01 * lengd^3.00
+
+The raised values can be used to calculate the actual catch by station, the standardized values one would use when making comparisons with previous years.
+
+A quick view of what we got:
+
+```{r}
+x <-
+  st.done %>% 
+  filter(ar >= 2016) %>% 
+  arrange(ar)
+
+x %>% 
+  ggplot() +
+  geom_path(data = geo::island, aes(lon, lat)) +
+  geom_segment(data = stadlar_rallstodvar, aes(kastad_v, kastad_n, xend = hift_v, yend = hift_n),
+               colour = "yellow", lwd = 1) +
+  geom_segment(aes(lon1, lat1, xend = lon2, yend = lat2, colour = factor(ar))) +
+  coord_quickmap(xlim = range(x$lon1), ylim = range(x$lat1)) +
+  labs(x = NULL, y = NULL)
+```
+
+#### Calculate catch by year and length
+
+```{r}
+by.lengd <-
+  st.done %>% 
+  left_join(le) %>% 
+  filter(ar %in% 2010:2017,
+         tegund == 1)
+by.lengd.m <-
+  by.lengd %>% 
+  group_by(tegund, lengd) %>% 
+  summarise(n.year = n_distinct(ar),
+            n.std = sum(n.std, na.rm = TRUE) / n.year,
+            b.std = sum(b.std, na.rm = TRUE) / n.year) %>% 
+  ungroup()
+by.lengd <-
+  by.lengd %>% 
+  group_by(tegund, ar, lengd) %>% 
+  summarise(n.std = sum(n.std, na.rm = TRUE),
+            b.std = sum(b.std, na.rm = TRUE)) %>% 
+  ungroup()
+
+ggplot() +
+  geom_ribbon(data = by.lengd.m, aes(lengd, ymax = n.std, ymin = 0), fill = "grey") +
+  geom_line(data = by.lengd, aes(lengd, n.std)) +
+  facet_grid(ar ~ .) +
+  labs(x = NULL, y = NULL,
+       title = "Sum of abundance") +
+  coord_cartesian(xlim = c(0, 100))
+
+ggplot() +
+  geom_ribbon(data = by.lengd.m, aes(lengd, ymax = b.std, ymin = 0), fill = "grey") +
+  geom_line(data = by.lengd, aes(lengd, b.std)) +
+  facet_grid(ar ~ .) +
+  labs(x = NULL, y = NULL,
+       title = "Sum of biomass") +
+  coord_cartesian(xlim = c(30, 100))
+```
+
+#### Calculate catch by station
+
+```{r}
+d.station <- 
+  st.done %>% 
+  select(synis_id, lon, lat, index) %>%  
+  left_join(le) %>% 
+  group_by(ar, index, lon, lat) %>% 
+  summarise(n.std = sum(n.std, na.rm = TRUE),
+            b.std = sum(b.std, na.rm = TRUE)) %>% 
+  ungroup()
+d.station %>% 
+  filter(ar %in% 2010:2017) %>% 
+  ggplot() +
+  geom_path(data = geo::island, aes(lon, lat)) +
+  geom_point(aes(lon, lat, size = b.std),
+             alpha = 0.5, colour = "red") +
+  scale_size_area(max_size = 10) +
+  facet_wrap(~ ar, nrow = 2) +
+  coord_quickmap(xlim = range(d.station$lon, na.rm = TRUE),
+                 ylim = range(d.station$lat, na.rm = TRUE)) +
+  labs(x = NULL, y = NULL)
+```
+
+#### Bootstrap mean catch per station
+
+```{r}
+d.station %>% 
+  ggplot(aes(ar, b.std)) +
+  stat_summary(fun.data = "mean_cl_boot") +
+  expand_limits(y = 0) +
+  labs(x = NULL, y = NULL,
+       title = "Bootstrap mean catch [kg]",
+       subtitle = "Range shows confidence inferval")
+```
+
+#### Calculation by species
+
+```{r}
+d.station2 <- 
+  st.done %>% 
+  select(synis_id, lon, lat, index) %>%  
+  left_join(le) %>% 
+  group_by(ar, index, lon, lat, tegund) %>% 
+  summarise(n.std = sum(n.std, na.rm = TRUE),
+            b.std = sum(b.std, na.rm = TRUE)) %>% 
+  ungroup()
+
+d.station2 %>% 
+  filter(ar == 2017,
+         tegund %in% c(1:10)) %>% 
+  ggplot() +
+  geom_path(data = geo::island, aes(lon, lat)) +
+  geom_point(aes(lon, lat, size = b.std),
+             alpha = 0.5, colour = "red") +
+  scale_size_area(max_size = 10) +
+  facet_wrap(~ tegund, nrow = 2) +
+  coord_quickmap(xlim = range(d.station2$lon, na.rm = TRUE),
+                 ylim = range(d.station2$lat, na.rm = TRUE)) +
+  labs(x = NULL, y = NULL)
+d.station2 %>% 
+  filter(ar == 2017) %>% 
+  group_by(tegund) %>% 
+  summarise(b.std = sum(b.std, na.rm = TRUE)) %>% 
+  arrange(-b.std) %>% 
+  # only top 10
+  slice(1:10) %>% 
+  ggplot(aes(reorder(tegund, b.std), b.std)) +
+  geom_point() +
+  coord_flip()
+```
+
+```{r}
+d.station2 %>% 
+  filter(tegund %in% c(1:3, 5, 9, 23)) %>% 
+  ggplot(aes(ar, b.std)) +
+  stat_summary(fun.data = "mean_cl_boot") +
+  expand_limits(y = 0) +
+  labs(x = NULL, y = NULL,
+       title = "Bootstrap mean catch [kg]",
+       subtitle = "Range shows confidence inferval") +
+  facet_wrap(~ tegund, scale = "free_y")
+```
+
+#### Catch history
+
+Say you want have some idea about catch in upcoming stations based on past history:
+```{r}
+st %>% 
+  filter(reitur == 512,
+         ar >= 2010) %>% 
+  select(synis_id, index) %>% 
+  left_join(le) %>% 
+  group_by(ar, index) %>% 
+  summarise(b.std = sum(b.std, na.rm = TRUE)) %>% 
+  ggplot(aes(ar, b.std)) +
+  geom_point() +
+  facet_wrap(~ index)
+x1 <-
+  st %>% 
+  filter(reitur == 512,
+         ar >= 2010) %>% 
+  select(synis_id, index) %>% 
+  left_join(le) %>% 
+  group_by(ar, index) %>% 
+  summarise(b.std = sum(b.std, na.rm = TRUE)) 
+
+x1 %>% 
+  group_by(index) %>% 
+  summarise(m = median(b.std, na.rm = TRUE),
+            max = max(b.std, na.rm = TRUE),
+            min = min(b.std, na.rm = TRUE)) %>% 
+  ggplot(aes(reorder(as.factor(index), m), m)) +
+  geom_pointrange(aes(ymin = min, ymax = max)) +
+  geom_point(data = x1, aes(as.factor(index), b.std), colour = "red", size = 0.5) +
+  coord_flip()
+```
+
