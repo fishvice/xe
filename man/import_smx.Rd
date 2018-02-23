@@ -4,8 +4,8 @@
 \alias{import_smx}
 \title{Title}
 \usage{
-import_smx(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
-  cruise = "TB1-2017", debug = 0)
+import_smx(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73, cruise,
+  debug = 0)
 }
 \arguments{
 \item{con}{XXX}

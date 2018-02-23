@@ -9,7 +9,9 @@
 #'
 #' @export
 import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
-                       cruise = "TB1-2017", debug = 0) {
+                       cruise, debug = 0) {
+
+  if(missing(cruise)) stop("Need to specify the current cruise (Leidangur)")
 
   now.year <- lubridate::now() %>% lubridate::year()
   now.year <- now.year - debug
@@ -18,7 +20,6 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
   max.towlength <- 8             # Maximum "acceptable" towlength
   std.towlength <- 4             # Standard tow length is 4 nautical miles
 
-  schema <- c("fiskar", "hafvog")
   st.list <- nu.list <- le.list <- list()
   for(i in 1:length(schema)) {
 
@@ -94,7 +95,7 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
 
   tows.done <-
     st %>%
-    filter(leidangur == cruise) %>%
+    filter(leidangur %in% cruise) %>%
     mutate(index = reitur * 10 + tognumer) %>%
     pull(index)
   st.done <-

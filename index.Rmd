@@ -9,7 +9,7 @@ runtime: shiny
 library(tidyverse)
 library(xe)
 con <- connect_xe(user = "gagnasja")
-import_smx(con, cruise = "TB1-2017", debug = 1)
+import_smx(con, cruise = c("TL1-2017"), debug = 1)
 ```
 
 ```{r global, include=FALSE}
@@ -124,25 +124,25 @@ renderLeaflet({
       by.station %>% 
       filter(ar == 2017, tegund == as.numeric(input$Species)) %>% 
       arrange(-n.std)
-    skali <- 4 / max(x$n.std)
+    skali <- sqrt(max(x$n.std))
     leaflet(x) %>% 
       addTiles() %>% 
       addCircles(data = x0, weight = 0.1, color = "red") %>% 
       addCircles(weight = 1,
                  popup = ~paste(n.std, "fiskar"),
-                 radius = ~n.std * skali * 1e4)
+                 radius = ~sqrt(n.std)/skali * 5e4)
   } else {
     x <- 
       by.station %>% 
       filter(ar == 2017, tegund == as.numeric(input$Species)) %>% 
       arrange(-b.std)
-    skali <- 4 / max(x$b.std)
+    skali <- sqrt(max(x$b.std))
     leaflet(x) %>% 
       addTiles() %>% 
       addCircles(data = x0, weight = 0.1, color = "red") %>% 
       addCircles(weight = 1,
                  popup = ~paste(round(b.std), "kg"),
-                 radius = ~b.std * skali * 1e4)
+                 radius = ~sqrt(b.std)/skali * 5e4)
   }
 })
 ```
