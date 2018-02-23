@@ -55,10 +55,10 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
                   group_by(synis_id, tegund, lengd) %>%
                   summarise(fjoldi = sum(fjoldi, na.rm = TRUE)) %>%
                   ungroup()) %>%
-      collect(n = Inf) # %>%
-      #filter(!is.na(tegund)) %>%
-      #complete(synis_id, tegund) %>%
-      #replace_na(list(lengd = 0, fjoldi = 0))
+      collect(n = Inf)  %>%
+      filter(!is.na(tegund)) %>%
+      complete(synis_id, tegund) %>%
+      replace_na(list(lengd = 0, fjoldi = 0))
 
 
 
