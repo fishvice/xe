@@ -6,7 +6,7 @@
 #' @param password XX
 #' @export
 #'
-connect_xe <- function(user, password) {
+connect_xe <- function(user = "gagnasja", password) {
 
   if(user == "hafvog_user") stop("sorry, not allowed")
 

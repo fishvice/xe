@@ -14,14 +14,17 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
   if(missing(cruise)) stop("Need to specify the current cruise (Leidangur)")
 
   now.year <- lubridate::now() %>% lubridate::year()
+
   now.year <- now.year - debug
 
   min.towlength <- 2             # Minimum "acceptable" towlength
   max.towlength <- 8             # Maximum "acceptable" towlength
   std.towlength <- 4             # Standard tow length is 4 nautical miles
 
-  st.list <- nu.list <- le.list <- list()
+  st.list <- nu.list <- le.list <- kv.list <- list()
   for(i in 1:length(schema)) {
+
+    print(i)
 
     st <-
       lesa_stodvar(con, schema[i]) %>%
@@ -39,10 +42,10 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
 
     nu.list[[i]] <-
       st %>%
-      select(synis_id, ar) %>%
+      select(synis_id) %>%
       left_join(lesa_numer(con, schema[i])) %>%
       mutate(fj_alls = fj_maelt + fj_talid) %>%
-      select(synis_id, ar, tegund, fj_maelt, fj_talid, fj_alls) %>%
+      select(synis_id, tegund, fj_maelt, fj_talid, fj_alls) %>%
       collect(n = Inf) %>%
       filter(!is.na(tegund)) %>%
       complete(synis_id, tegund) %>%
@@ -50,7 +53,7 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
 
     le.list[[i]] <-
       st %>%
-      select(synis_id, ar, leidangur, reitur, tognumer, toglengd) %>%
+      select(synis_id) %>%
       left_join(lesa_lengdir(con, schema[i]) %>%
                   group_by(synis_id, tegund, lengd) %>%
                   summarise(fjoldi = sum(fjoldi, na.rm = TRUE)) %>%
@@ -60,8 +63,11 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
       complete(synis_id, tegund) %>%
       replace_na(list(lengd = 0, fjoldi = 0))
 
-
-
+    kv.list[[i]] <-
+      st %>%
+      select(synis_id) %>%
+      left_join(lesa_kvarnir(con)) %>%
+      collect(n = Inf)
 
     st.list[[i]] <-
       st %>%
@@ -73,7 +79,8 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
       geo::geoconvert(col.names = c("lat1", "lon1")) %>%
       geo::geoconvert(col.names = c("lat2", "lon2")) %>%
       mutate(lon = (lon1 + lon2) / 2,
-             lat = (lat1 + lat2) / 2)
+             lat = (lat1 + lat2) / 2,
+             toglengd = ifelse(is.na(toglengd), 4, toglengd))
 
     le.list[[i]] <-
       le.list[[i]] %>%
@@ -92,11 +99,12 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
   st <- bind_rows(st.list) %>% mutate(index = reitur * 10 + tognumer)
   nu <- bind_rows(nu.list)
   le <- bind_rows(le.list)
+  kv <- bind_rows(kv.list)
 
   tows.done <-
     st %>%
     filter(leidangur %in% cruise) %>%
-    mutate(index = reitur * 10 + tognumer) %>%
+    #mutate(index = reitur * 10 + tognumer) %>%
     pull(index)
   st.done <-
     st %>%
@@ -119,10 +127,24 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
     arrange(tegund) %>%
     collect(n = Inf)
 
+  tegund.dashboard <-
+    st %>%
+    select(synis_id, ar) %>%
+    left_join(nu) %>%
+    filter(fj_alls > 0) %>%
+    select(synis_id, ar, tegund) %>%
+    group_by(tegund) %>%
+    summarise(n = n_distinct(ar)) %>%
+    # only species that have occured at minimum for 30 years
+    filter(n >= 30) %>%
+    collect() %>%
+    pull(tegund) %>% sort()
+
   by.tegund.lengd.ar <-
     st.done %>%
     select(synis_id) %>%
     left_join(le) %>%
+    filter(tegund %in% tegund.dashboard) %>%
     group_by(tegund, ar, lengd) %>%
     summarise(n.std = sum(n.std, na.rm = TRUE),
               b.std = sum(b.std, na.rm = TRUE)) %>%
@@ -160,19 +182,59 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
     st.done %>%
     select(synis_id, lon, lat, index) %>%
     left_join(le) %>%
+    filter(tegund %in% tegund.dashboard) %>%
     group_by(ar, index, lon, lat, tegund) %>%
     summarise(n.std = sum(n.std, na.rm = TRUE),
               b.std = sum(b.std, na.rm = TRUE)) %>%
     ungroup()
 
-  dir.create("data")
-  save(by.tegund.lengd.ar, by.tegund.lengd.ar.m,
-       by.station, fisktegundir, file = "data/smb_dashboard.rda")
+
+  my_boot = function(x, times=100) {
+
+    # Get column name from input object
+    var = deparse(substitute(x))
+    var = gsub("^\\.\\$","", var)
+
+    # Bootstrap 95% CI
+    cis = quantile(replicate(times, mean(sample(x, replace=TRUE))), probs=c(0.025,0.975))
+
+    # Return data frame of results
+    data.frame(var, n=length(x), mean=mean(x), lower.ci=cis[1], upper.ci=cis[2])
+  }
+
+  by.station.boot.n <-
+    by.station %>%
+    group_by(tegund, ar) %>%
+    do(my_boot(.$n.std)) %>%
+    mutate(variable = "n")
+
+  by.station.boot.b <-
+    by.station %>%
+    group_by(tegund, ar) %>%
+    do(my_boot(.$b.std)) %>%
+    mutate(variable = "b")
+
+  by.station.boot <-
+    bind_rows(by.station.boot.n, by.station.boot.b)
+
+  timi <- lubridate::now()
+
+  kv.this.year <-
+    st.done %>%
+    filter(ar == 2017) %>%
+    select(synis_id) %>%
+    left_join(kv)
+
+
+  dir.create("data2")
+  save(timi, kv.this.year, by.tegund.lengd.ar, by.tegund.lengd.ar.m,
+       by.station, fisktegundir, by.station.boot, file = "data2/smb_dashboard.rda")
 
 
 
   st <<- st
   le <<- le
+  kv <<- kv
   nu <<- nu
   st.done <<- st.done
 
