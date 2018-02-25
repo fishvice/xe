@@ -110,16 +110,16 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
     st %>%
     filter(index %in% tows.done)
 
-  stadlar_rallstodvar <<- lesa_stadla_rallstodvar(con) %>%
+  stadlar.rallstodvar <- lesa_stadla_rallstodvar(con) %>%
     filter(veidarfaeri_id == gid,
            synaflokkur == id) %>%
     collect(n = Inf) %>%
     geo::geoconvert(col.names = c("kastad_v", "kastad_n")) %>%
     geo::geoconvert(col.names = c("hift_v",   "hift_n"))
 
-  stadlar_tegundir <<- lesa_stadla_tegund_smb(con) %>% collect(n = Inf)
+  stadlar.tegundir <- lesa_stadla_tegund_smb(con) %>% collect(n = Inf)
 
-  stadlar_lw <<- lesa_stadla_lw(con) %>% collect(n = Inf)
+  stadlar.lw <- lesa_stadla_lw(con) %>% collect(n = Inf)
 
   fisktegundir <-
     tbl_mar(con, "hafvog.fisktegundir") %>%
@@ -144,7 +144,7 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
     st.done %>%
     select(synis_id) %>%
     left_join(le) %>%
-    filter(tegund %in% tegund.dashboard) %>%
+    #filter(tegund %in% tegund.dashboard) %>%
     group_by(tegund, ar, lengd) %>%
     summarise(n.std = sum(n.std, na.rm = TRUE),
               b.std = sum(b.std, na.rm = TRUE)) %>%
@@ -182,7 +182,7 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
     st.done %>%
     select(synis_id, lon, lat, index) %>%
     left_join(le) %>%
-    filter(tegund %in% tegund.dashboard) %>%
+    #filter(tegund %in% tegund.dashboard) %>%
     group_by(ar, index, lon, lat, tegund) %>%
     summarise(n.std = sum(n.std, na.rm = TRUE),
               b.std = sum(b.std, na.rm = TRUE)) %>%
@@ -225,18 +225,73 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
     select(synis_id) %>%
     left_join(kv)
 
+  library(sp)
+  tows <- stadlar.rallstodvar
+
+  tows$id2 <- 1:nrow(tows)
+  x1 <-
+    tows %>%
+    select(id2, kastad_v, hift_v) %>%
+    gather(variable, value, -id2)
+  x2 <-
+    tows %>%
+    select(id2, kastad_n, hift_n) %>%
+    gather(variable, value, -id2)
+  x <- data.frame(id2 = x1$id2, lon = x1$value, lat = x2$value)
+  lines_list <- list()
+  for (i in 1:max(tows$id2)) {
+    x2 <- Line(x[x$id2 == i,c("lon","lat")])
+    lines_list[[i]] <- Lines(list(x2),ID=as.character(tows$id2[i]))
+  }
+  sp <-
+    lines_list %>%
+    SpatialLines(proj4string = gisland::PRO) %>%
+    SpatialLinesDataFrame(data.frame(id = as.character(tows$id2)))
+  sp@data <- cbind(sp@data, tows)
+  stadlar.rallstodvar.sp <- sp
+
+  tows <-
+    st.done %>%
+    filter(!is.na(lon1), !is.na(lat1), !is.na(lon2), !is.na(lat2))
+  tows$id2 <- 1:nrow(tows)
+  x1 <-
+    tows %>%
+    select(id2, lon1, lon2) %>%
+    gather(variable, value, -id2)
+  x2 <-
+    tows %>%
+    select(id2, lat1, lat2) %>%
+    gather(variable, value, -id2)
+  x <- data.frame(id2 = x1$id2, lon = x1$value, lat = x2$value)
+  lines_list <- list()
+  for (i in 1:max(tows$id2)) {
+    x2 <- Line(x[x$id2 == i,c("lon","lat")])
+    lines_list[[i]] <- Lines(list(x2),ID=as.character(tows$id2[i]))
+  }
+  sp <-
+    lines_list %>%
+    SpatialLines(proj4string = gisland::PRO) %>%
+    SpatialLinesDataFrame(data.frame(id = as.character(tows$id2)))
+  sp@data <- cbind(sp@data, tows)
+  st.done.sp <- sp
 
   dir.create("data2")
-  save(timi, kv.this.year, by.tegund.lengd.ar, by.tegund.lengd.ar.m,
+  save(stadlar.rallstodvar.sp,
+       st.done.sp,
+       stadlar.tegundir,
+       stadlar.lw,
+       sp,
+       timi, kv.this.year, by.tegund.lengd.ar, by.tegund.lengd.ar.m,
        by.station, fisktegundir, by.station.boot, file = "data2/smb_dashboard.rda")
-
-
 
   st <<- st
   le <<- le
   kv <<- kv
   nu <<- nu
   st.done <<- st.done
+  stadlar.rallstodvar <<- stadlar.rallstodvar
+  stadlar.tegundir <<- stadlar.tegundir
+  stadlar.lw <<- stadlar.lw
 
 
 }
