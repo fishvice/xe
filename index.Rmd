@@ -1,5 +1,5 @@
 ---
-title: "Mælaborð hins íslenzka vorralls"
+title: "Mælaborð hins íslenzka vorralls2"
 output: flexdashboard::flex_dashboard
 runtime: shiny
 ---
@@ -8,16 +8,18 @@ runtime: shiny
 #devtools::install_github("fishvice/xe",  dependencies = FALSE, args='--no-multiarch')
 library(tidyverse)
 library(xe)
+#con <- connect_xe(user = "gagnasja")
+con <- mar::connect_mar()
 source("R/import_smx.R")
-con <- connect_xe(user = "gagnasja")
 import_smx(con, cruise = c("A5-2017", "B3-2017", "TB1-2017", "TL1-2017"), schema = "fiskar", debug = 0)
+#import_smx(con, cruise = c("TB1-2017"), schema = "fiskar", debug = 0)
 ```
 
 ```{r global, include=FALSE}
 # load data in 'global' chunk so it can be shared by all users of the dashboard
 library(tidyverse)
 library(leaflet)
-load("data/smb_dashboard.rda")
+load("data2/smb_dashboard.rda")
 
 Tegund <- sort(unique(by.tegund.lengd.ar$tegund))
 x <- 
@@ -51,6 +53,7 @@ Column
 -------------------------------------
 
 ### By length
+
 
 ```{r}
 renderPlot({
@@ -88,23 +91,29 @@ Column
 
 ### Mean catch - bootstrap with confidence limits
 
+```{r, eval = FALSE}
+
+```
+
 ```{r}
 renderPlot({
   if(input$Type == "Numbers") 
   {
-    by.station %>% 
-      filter(tegund == as.numeric(input$Species)) %>% 
+    by.station.boot %>% 
+      filter(tegund == as.numeric(input$Species),
+             variable == "n") %>% 
       ggplot(aes(ar, n.std)) +
-      stat_summary(fun.data = "mean_cl_boot") +
+      geom_pointrange(aes(ar, mean, ymin = lower.ci, ymax = upper.ci)) +
       scale_x_continuous(breaks = seq(1985, 2015, by = 5)) +
       xlim(1985, 2018) +
       expand_limits(y = 0) +
       labs(x = NULL, y = NULL)
   } else {
-    by.station %>% 
-      filter(tegund == as.numeric(input$Species)) %>% 
+    by.station.boot %>% 
+      filter(tegund == as.numeric(input$Species),
+             variable == "b") %>% 
       ggplot(aes(ar, b.std)) +
-      stat_summary(fun.data = "mean_cl_boot") +
+      geom_pointrange(aes(ar, mean, ymin = lower.ci, ymax = upper.ci)) +
       scale_x_continuous(breaks = seq(1985, 2015, by = 5)) +
       xlim(1985, 2018) +
       expand_limits(y = 0) +
@@ -115,6 +124,10 @@ renderPlot({
 
 
 ### Catch per haul
+
+```{r, eval = FALSE}
+
+```
 
 ```{r}
 renderLeaflet({
@@ -157,7 +170,7 @@ More stuff
 renderPlot({
   if(input$Type == "Numbers") {
     by.station %>% 
-      filter(ar %in% c(1985, 1990, 1995, 2000, 2005, 2010:2018),
+      filter(ar %in% c(1985, 1990, 1995, 2000, seq(2005, 2015, by = 2), 2017, 2018),
              tegund == as.numeric(input$Species)) %>% 
       ggplot() +
       geom_path(data = geo::island, aes(lon, lat)) +
@@ -166,11 +179,12 @@ renderPlot({
       scale_size_area(max_size = 10) +
       coord_quickmap(xlim = range(by.station$lon, na.rm = TRUE),
                      ylim = range(by.station$lat, na.rm = TRUE)) +
+      theme(legend.position = c(0.5, 0.6)) +
       labs(x = NULL, y = NULL) +
       facet_wrap(~ ar, nrow = 3)
   } else {
     by.station %>% 
-      filter(ar %in% c(1985, 1990, 1995, 2000, 2005, 2010:2018),
+      filter(ar %in% c(1985, 1990, 1995, 2000, seq(2005, 2015, by = 2), 2017, 2018),
              tegund == as.numeric(input$Species)) %>% 
       ggplot() +
       geom_path(data = geo::island, aes(lon, lat)) +
@@ -179,6 +193,7 @@ renderPlot({
       scale_size_area(max_size = 10) +
       coord_quickmap(xlim = range(by.station$lon, na.rm = TRUE),
                      ylim = range(by.station$lat, na.rm = TRUE)) +
+      theme(legend.position = c(0.5, 0.6)) +
       labs(x = NULL, y = NULL) +
       facet_wrap(~ ar, nrow = 3)
   }

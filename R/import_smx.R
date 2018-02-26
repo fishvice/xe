@@ -222,7 +222,7 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
   kv.this.year <-
     st.done %>%
     filter(ar == 2017) %>%
-    select(synis_id) %>%
+    select(synis_id, index) %>%
     left_join(kv)
 
   library(sp)
@@ -275,6 +275,27 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
   sp@data <- cbind(sp@data, tows)
   st.done.sp <- sp
 
+  d2 <-
+    stadlar.lw %>%
+    mutate(osl1 = osl * (1 - fravik),
+           osl2 = osl * (1 + fravik),
+           sl1 = sl * (1 - fravik),
+           sl2 = sl * (1 + fravik)) %>%
+    select(tegund, lengd, osl1:sl2)
+  kv.this.year <-
+    kv.this.year %>%
+    left_join(d2) %>%
+    mutate(ok.osl = ifelse(oslaegt >= osl1 & oslaegt <= osl2, TRUE, FALSE),
+           ok.sl = ifelse(slaegt >= sl1 & slaegt <= sl2, TRUE, FALSE),
+           lab = paste0(index, ": ", nr))
+  kv.this.year <-
+    kv.this.year %>%
+    left_join(stadlar.tegundir %>%
+                select(tegund, r1 = r.sl.osl_low, r2 = r.sl.osl_high)) %>%
+    mutate(ok.sl.osl = ifelse(slaegt/oslaegt >= r1 & slaegt/oslaegt <= r2, TRUE, FALSE)) %>%
+    select(-r1, -r2)
+
+
   dir.create("data2")
   save(stadlar.rallstodvar.sp,
        st.done.sp,
@@ -282,7 +303,7 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
        stadlar.lw,
        sp,
        timi, kv.this.year, by.tegund.lengd.ar, by.tegund.lengd.ar.m,
-       by.station, fisktegundir, by.station.boot, file = "data2/smb_dashboard.rda")
+       by.station, fisktegundir, by.station.boot, file = "data2/smb_dashboard2.rda")
 
   st <<- st
   le <<- le
