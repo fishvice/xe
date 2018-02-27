@@ -9,6 +9,7 @@
 #'
 #' @export
 #cruise = c("A5-2017", "B3-2017", "TB1-2017", "TL1-2017"); schema = "fiskar"; debug = 0 ; id = 30; gid = 73
+# con <- mar::connect_mar()
 import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
                        cruise, debug = 0) {
 
@@ -26,12 +27,11 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
 
   # ----------------------------------------------------------------------------
   # IMPORT
+  print("Lesa úr Hafvog")
 
   # A. FISKAR ------------------------------------------------------------------
   st.list <- nu.list <- le.list <- kv.list <- list()
   for(i in 1:length(schema)) {
-
-    print(i)
 
     st <-
       lesa_stodvar(con, schema[i]) %>%
@@ -50,7 +50,7 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
     nu.list[[i]] <-
       st %>%
       select(synis_id) %>%
-      left_join(lesa_numer(con, schema[i])) %>%
+      left_join(lesa_numer(con, schema[i]), by = "synis_id") %>%
       mutate(fj_alls = fj_maelt + fj_talid) %>%
       select(synis_id, tegund, fj_maelt, fj_talid, fj_alls) %>%
       collect(n = Inf) %>%
@@ -64,7 +64,7 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
       left_join(lesa_lengdir(con, schema[i]) %>%
                   group_by(synis_id, tegund, lengd) %>%
                   summarise(fjoldi = sum(fjoldi, na.rm = TRUE)) %>%
-                  ungroup()) %>%
+                  ungroup(), by = "synis_id") %>%
       collect(n = Inf)  %>%
       filter(!is.na(tegund)) %>%
       complete(synis_id, tegund) %>%
@@ -73,7 +73,7 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
     kv.list[[i]] <-
       st %>%
       select(synis_id) %>%
-      left_join(lesa_kvarnir(con)) %>%
+      left_join(lesa_kvarnir(con), by = "synis_id") %>%
       collect(n = Inf)
 
     st.list[[i]] <-
@@ -91,10 +91,10 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
 
     le.list[[i]] <-
       le.list[[i]] %>%
-      left_join(nu.list[[i]]) %>%
+      left_join(nu.list[[i]], by = c("synis_id", "tegund")) %>%
       mutate(r = ifelse(fjoldi == 0, 1, fj_alls/fj_maelt),
              n.rai = ifelse(fjoldi != 0, fjoldi * r, fj_alls)) %>%
-      left_join(st.list[[i]] %>% select(synis_id, ar, reitur, tognumer, toglengd)) %>%
+      left_join(st.list[[i]] %>% select(synis_id, ar, reitur, tognumer, toglengd), by = "synis_id") %>%
       mutate(toglengd = if_else(toglengd > max.towlength, max.towlength, toglengd),
              toglengd = if_else(toglengd < min.towlength, min.towlength, toglengd),
              n.std = n.rai * std.towlength/toglengd,
@@ -103,7 +103,7 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
 
   }
 
-  st <- bind_rows(st.list) %>% mutate(index = reitur * 10 + tognumer)
+  st <- bind_rows(st.list) %>% mutate(index = reitur * 100 + tognumer)
   nu <- bind_rows(nu.list)
   le <- bind_rows(le.list)
   kv <- bind_rows(kv.list)
@@ -149,17 +149,16 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
   # DATA MUNGING
 
   # A. STATIONS DONE - FOR DASHBOARD
-  tows.done <-
+  print("Reikna allskonar dót")
+  index.done <-
     st %>%
     filter(leidangur %in% cruise) %>%
     pull(index)
-  st.done <-
-    st %>%
-    filter(index %in% tows.done)
   by.tegund.lengd.ar <-
-    st.done %>%
+    st %>%
+    filter(index %in% index.done) %>%
     select(synis_id) %>%
-    left_join(le) %>%
+    left_join(le, by = "synis_id") %>%
     group_by(tegund, ar, lengd) %>%
     summarise(n.std = sum(n.std, na.rm = TRUE),
               b.std = sum(b.std, na.rm = TRUE)) %>%
@@ -180,7 +179,7 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
 
   by.tegund.lengd.ar <-
     x %>%
-    left_join(by.tegund.lengd.ar) %>%
+    left_join(by.tegund.lengd.ar, by = c("tegund", "lengd", "ar")) %>%
     mutate(n.std = ifelse(is.na(n.std), 0, n.std),
            b.std = ifelse(is.na(b.std), 0, b.std))
 
@@ -194,15 +193,33 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
     ungroup()
 
   by.station <-
-    st.done %>%
+    st %>%
+    filter(index %in% index.done) %>%
     select(synis_id, lon, lat, index) %>%
-    left_join(le) %>%
-    #filter(tegund %in% tegund.dashboard) %>%
+    left_join(le, by = "synis_id") %>%
     group_by(ar, index, lon, lat, tegund) %>%
     summarise(n.std = sum(n.std, na.rm = TRUE),
               b.std = sum(b.std, na.rm = TRUE)) %>%
     ungroup()
 
+  kv.this.year <-
+    st %>%
+    filter(ar == 2017,
+           index %in% index.done) %>%
+    select(synis_id, index) %>%
+    left_join(kv, by = "synis_id") %>%
+    mutate(lab = paste0(index, "-", nr)) %>%
+    left_join(stadlar.lw, by = c("tegund", "lengd")) %>%
+    mutate(ok.osl = if_else(oslaegt >= osl1 & oslaegt <= osl2, TRUE, FALSE, TRUE),
+           ok.sl = if_else(slaegt >= sl1 & slaegt <= sl2, TRUE, FALSE, TRUE)) %>%
+    select(-c(osl1:sl2)) %>%
+    left_join(stadlar.tegundir %>%
+                select(tegund, kynkirtlar_high:oslaegt_vigtad_low), by = "tegund") %>%
+    mutate(ok.sl.osl = if_else(slaegt/oslaegt >= oslaegt_slaegt_low & slaegt/oslaegt <= oslaegt_slaegt_high, TRUE, FALSE, TRUE),
+           ok.kirtlar.osl = if_else(kynfaeri/oslaegt >= kynkirtlar_low & kynfaeri/oslaegt <= kynkirtlar_high, TRUE, FALSE, TRUE),
+           ok.lifur.osl = if_else(lifur/oslaegt >= lifur_low & lifur/oslaegt <= lifur_high, TRUE, FALSE, TRUE),
+           ok.magir.osl = if_else(magi/oslaegt  >= magi_low & magi/oslaegt <= magi_high, TRUE, FALSE, TRUE)) %>%
+    select(-c(kynkirtlar_high:oslaegt_vigtad_low))
 
   my_boot = function(x, times=100) {
 
@@ -217,38 +234,28 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
     data.frame(var, n=length(x), mean=mean(x), lower.ci=cis[1], upper.ci=cis[2])
   }
 
+  print("Hártoga fjölda")
+
   by.station.boot.n <-
     by.station %>%
     group_by(tegund, ar) %>%
     do(my_boot(.$n.std)) %>%
-    mutate(variable = "n")
+    mutate(variable = "n",
+           var = as.character(var))
+
+  print("Hártoga þyngd")
 
   by.station.boot.b <-
     by.station %>%
     group_by(tegund, ar) %>%
     do(my_boot(.$b.std)) %>%
-    mutate(variable = "b")
+    mutate(variable = "b",
+           var = as.character(var))
 
   by.station.boot <-
     bind_rows(by.station.boot.n, by.station.boot.b)
 
-  kv.this.year <-
-    st.done %>%
-    filter(ar == 2017) %>%
-    select(synis_id, index) %>%
-    left_join(kv) %>%
-    mutate(lab = paste0(index, "-", nr)) %>%
-    left_join(stadlar.lw) %>%
-    mutate(ok.osl = if_else(oslaegt >= osl1 & oslaegt <= osl2, TRUE, FALSE, TRUE),
-           ok.sl = if_else(slaegt >= sl1 & slaegt <= sl2, TRUE, FALSE, TRUE)) %>%
-    select(-c(osl1:sl2)) %>%
-    left_join(stadlar.tegundir %>%
-                select(tegund, kynkirtlar_high:oslaegt_vigtad_low)) %>%
-    mutate(ok.sl.osl = if_else(slaegt/oslaegt >= oslaegt_slaegt_low & slaegt/oslaegt <= oslaegt_slaegt_high, TRUE, FALSE, TRUE),
-           ok.kirtlar.osl = if_else(kynfaeri/oslaegt >= kynkirtlar_low & kynfaeri/oslaegt <= kynkirtlar_high, TRUE, FALSE, TRUE),
-           ok.lifur.osl = if_else(lifur/oslaegt >= lifur_low & lifur/oslaegt <= lifur_high, TRUE, FALSE, TRUE),
-           ok.magir.osl = if_else(magi/oslaegt  >= magi_low & magi/oslaegt <= magi_high, TRUE, FALSE, TRUE)) %>%
-    select(-c(kynkirtlar_high:oslaegt_vigtad_low))
+  print("Víðóma dót")
 
   library(sp)
   tows <- stadlar.rallstodvar
@@ -276,7 +283,8 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
   stadlar.rallstodvar.sp <- sp
 
   tows <-
-    st.done %>%
+    st %>%
+    filter(index %in% index.done) %>%
     filter(!is.na(lon1), !is.na(lat1), !is.na(lon2), !is.na(lat2))
   tows$id2 <- 1:nrow(tows)
   x1 <-
@@ -302,9 +310,13 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
 
   timi <- lubridate::now() %>% as.character()
 
-  dir.create("data2")
-  save(stadlar.rallstodvar.sp,
+  print("Vistun")
+
+  dir.create("data2", showWarnings = FALSE)
+  save(index.done,
+       stadlar.rallstodvar.sp,
        st.done.sp,
+       st,
        stadlar.tegundir,
        stadlar.lw,
        sp,
@@ -315,10 +327,12 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
   le <<- le
   kv <<- kv
   nu <<- nu
-  st.done <<- st.done
+  index.done <<- index.done
   stadlar.rallstodvar <<- stadlar.rallstodvar
   stadlar.tegundir <<- stadlar.tegundir
   stadlar.lw <<- stadlar.lw
+
+  print("Ormurinn hefur lokið sér af")
 
 
 }

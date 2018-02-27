@@ -18,10 +18,10 @@ lesa_stadla_lw <- function(con) {
   expand.grid(tegund = unique(d$tegund),
                 lengd = 1:1500) %>%
     as_tibble() %>%
-    left_join(x) %>%
+    left_join(x, by = "tegund") %>%
     filter(lengd <= l.max) %>%
     select(-l.max) %>%
-    left_join(d) %>%
+    left_join(d, by = c("tegund", "lengd")) %>%
     arrange(tegund, -lengd) %>%
     group_by(tegund) %>%
     fill(oslaegt_a:fravik) %>%
