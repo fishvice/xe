@@ -8,19 +8,26 @@
 #' @param debug XXX
 #'
 #' @export
+#cruise = c("A5-2017", "B3-2017", "TB1-2017", "TL1-2017"); schema = "fiskar"; debug = 0 ; id = 30; gid = 73
 import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
                        cruise, debug = 0) {
 
   if(missing(cruise)) stop("Need to specify the current cruise (Leidangur)")
 
+  # ----------------------------------------------------------------------------
+  # Constants
+
   now.year <- lubridate::now() %>% lubridate::year()
-
   now.year <- now.year - debug
-
   min.towlength <- 2             # Minimum "acceptable" towlength
   max.towlength <- 8             # Maximum "acceptable" towlength
   std.towlength <- 4             # Standard tow length is 4 nautical miles
 
+
+  # ----------------------------------------------------------------------------
+  # IMPORT
+
+  # A. FISKAR ------------------------------------------------------------------
   st.list <- nu.list <- le.list <- kv.list <- list()
   for(i in 1:length(schema)) {
 
@@ -101,25 +108,32 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
   le <- bind_rows(le.list)
   kv <- bind_rows(kv.list)
 
-  tows.done <-
-    st %>%
-    filter(leidangur %in% cruise) %>%
-    #mutate(index = reitur * 10 + tognumer) %>%
-    pull(index)
-  st.done <-
-    st %>%
-    filter(index %in% tows.done)
-
-  stadlar.rallstodvar <- lesa_stadla_rallstodvar(con) %>%
+  # B. STADLAR -----------------------------------------------------------------
+  stadlar.rallstodvar <-
+    lesa_stadla_rallstodvar(con) %>%
     filter(veidarfaeri_id == gid,
            synaflokkur == id) %>%
     collect(n = Inf) %>%
     geo::geoconvert(col.names = c("kastad_v", "kastad_n")) %>%
     geo::geoconvert(col.names = c("hift_v",   "hift_n"))
 
-  stadlar.tegundir <- lesa_stadla_tegund_smb(con) %>% collect(n = Inf)
+  stadlar.tegundir <-
+    lesa_stadla_tegund_smb(con) %>%
+    filter(leidangur_id == 1) %>%
+    arrange(tegund) %>%
+    collect(n = Inf) %>%
+    gather(variable, value, lifur_low:kynkirtlar_high) %>%
+    mutate(value = value / 100) %>%
+    spread(variable, value)
 
-  stadlar.lw <- lesa_stadla_lw(con) %>% collect(n = Inf)
+  stadlar.lw <-
+    lesa_stadla_lw(con) %>%
+    collect(n = Inf) %>%
+    mutate(osl1 = osl * (1 - fravik),
+           osl2 = osl * (1 + fravik),
+           sl1 = sl * (1 - fravik),
+           sl2 = sl * (1 + fravik)) %>%
+    select(tegund, lengd, osl1:sl2)
 
   fisktegundir <-
     tbl_mar(con, "hafvog.fisktegundir") %>%
@@ -127,24 +141,25 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
     arrange(tegund) %>%
     collect(n = Inf)
 
-  tegund.dashboard <-
-    st %>%
-    select(synis_id, ar) %>%
-    left_join(nu) %>%
-    filter(fj_alls > 0) %>%
-    select(synis_id, ar, tegund) %>%
-    group_by(tegund) %>%
-    summarise(n = n_distinct(ar)) %>%
-    # only species that have occured at minimum for 30 years
-    filter(n >= 30) %>%
-    collect() %>%
-    pull(tegund) %>% sort()
+  # IMPORT
+  # ----------------------------------------------------------------------------
 
+
+  # ----------------------------------------------------------------------------
+  # DATA MUNGING
+
+  # A. STATIONS DONE - FOR DASHBOARD
+  tows.done <-
+    st %>%
+    filter(leidangur %in% cruise) %>%
+    pull(index)
+  st.done <-
+    st %>%
+    filter(index %in% tows.done)
   by.tegund.lengd.ar <-
     st.done %>%
     select(synis_id) %>%
     left_join(le) %>%
-    #filter(tegund %in% tegund.dashboard) %>%
     group_by(tegund, ar, lengd) %>%
     summarise(n.std = sum(n.std, na.rm = TRUE),
               b.std = sum(b.std, na.rm = TRUE)) %>%
@@ -217,13 +232,23 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
   by.station.boot <-
     bind_rows(by.station.boot.n, by.station.boot.b)
 
-  timi <- lubridate::now()
-
   kv.this.year <-
     st.done %>%
     filter(ar == 2017) %>%
     select(synis_id, index) %>%
-    left_join(kv)
+    left_join(kv) %>%
+    mutate(lab = paste0(index, "-", nr)) %>%
+    left_join(stadlar.lw) %>%
+    mutate(ok.osl = if_else(oslaegt >= osl1 & oslaegt <= osl2, TRUE, FALSE, TRUE),
+           ok.sl = if_else(slaegt >= sl1 & slaegt <= sl2, TRUE, FALSE, TRUE)) %>%
+    select(-c(osl1:sl2)) %>%
+    left_join(stadlar.tegundir %>%
+                select(tegund, kynkirtlar_high:oslaegt_vigtad_low)) %>%
+    mutate(ok.sl.osl = if_else(slaegt/oslaegt >= oslaegt_slaegt_low & slaegt/oslaegt <= oslaegt_slaegt_high, TRUE, FALSE, TRUE),
+           ok.kirtlar.osl = if_else(kynfaeri/oslaegt >= kynkirtlar_low & kynfaeri/oslaegt <= kynkirtlar_high, TRUE, FALSE, TRUE),
+           ok.lifur.osl = if_else(lifur/oslaegt >= lifur_low & lifur/oslaegt <= lifur_high, TRUE, FALSE, TRUE),
+           ok.magir.osl = if_else(magi/oslaegt  >= magi_low & magi/oslaegt <= magi_high, TRUE, FALSE, TRUE)) %>%
+    select(-c(kynkirtlar_high:oslaegt_vigtad_low))
 
   library(sp)
   tows <- stadlar.rallstodvar
@@ -275,26 +300,7 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
   sp@data <- cbind(sp@data, tows)
   st.done.sp <- sp
 
-  d2 <-
-    stadlar.lw %>%
-    mutate(osl1 = osl * (1 - fravik),
-           osl2 = osl * (1 + fravik),
-           sl1 = sl * (1 - fravik),
-           sl2 = sl * (1 + fravik)) %>%
-    select(tegund, lengd, osl1:sl2)
-  kv.this.year <-
-    kv.this.year %>%
-    left_join(d2) %>%
-    mutate(ok.osl = ifelse(oslaegt >= osl1 & oslaegt <= osl2, TRUE, FALSE),
-           ok.sl = ifelse(slaegt >= sl1 & slaegt <= sl2, TRUE, FALSE),
-           lab = paste0(index, ": ", nr))
-  kv.this.year <-
-    kv.this.year %>%
-    left_join(stadlar.tegundir %>%
-                select(tegund, r1 = r.sl.osl_low, r2 = r.sl.osl_high)) %>%
-    mutate(ok.sl.osl = ifelse(slaegt/oslaegt >= r1 & slaegt/oslaegt <= r2, TRUE, FALSE)) %>%
-    select(-r1, -r2)
-
+  timi <- lubridate::now() %>% as.character()
 
   dir.create("data2")
   save(stadlar.rallstodvar.sp,
