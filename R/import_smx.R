@@ -8,8 +8,11 @@
 #' @param debug XXX
 #'
 #' @export
-#cruise = c("A5-2017", "B3-2017", "TB1-2017", "TL1-2017"); schema = "fiskar"; debug = 0 ; id = 30; gid = 73
-# con <- mar::connect_mar()
+#library(xe)
+#cruise <- c("TL1-2018")
+#schema <- c("fiskar", "hafvog")
+#id = 30; gid = 73; debug = 0
+#con <- connect_xe()
 import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
                        cruise, debug = 0) {
 
@@ -73,7 +76,7 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
     kv.list[[i]] <-
       st %>%
       select(synis_id) %>%
-      left_join(lesa_kvarnir(con), by = "synis_id") %>%
+      left_join(lesa_kvarnir(con, schema[i]), by = "synis_id") %>%
       collect(n = Inf)
 
     st.list[[i]] <-
@@ -185,7 +188,7 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
 
   by.tegund.lengd.ar.m <-
     by.tegund.lengd.ar %>%
-    filter(ar %in% 2010:2018) %>%
+    filter(ar >= 2010) %>%
     group_by(tegund, lengd) %>%
     summarise(n.year = n_distinct(ar),
               n.std = sum(n.std, na.rm = TRUE) / n.year,
@@ -204,7 +207,7 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
 
   kv.this.year <-
     st %>%
-    filter(ar == 2017,
+    filter(ar == now.year,
            index %in% index.done) %>%
     select(synis_id, index) %>%
     left_join(kv, by = "synis_id") %>%
@@ -317,11 +320,14 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
        stadlar.rallstodvar.sp,
        st.done.sp,
        st,
+       le,
+       kv,
+       nu,
        stadlar.tegundir,
        stadlar.lw,
        sp,
        timi, kv.this.year, by.tegund.lengd.ar, by.tegund.lengd.ar.m,
-       by.station, fisktegundir, by.station.boot, file = "data2/smb_dashboard2.rda")
+       by.station, fisktegundir, by.station.boot, file = "data2/smb_dashboard.rda")
 
   st <<- st
   le <<- le
