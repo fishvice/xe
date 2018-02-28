@@ -8,9 +8,7 @@ Authors@R:
 Maintainer: Einar Hjorleifsson <einar.hjorleifsson@gmail.com>
 Description: Database utilities for MFRI xe-database
 Depends:
-    R (>= 3.1.1),
-    tidyverse,
-    ROracle
+    R (>= 3.1.1)
 Imports:
     DBI,
     dplyr,
