@@ -8,17 +8,19 @@ import_smx(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73, cruise,
   debug = 0)
 }
 \arguments{
-\item{con}{XXX}
+\item{con}{Connection to Oracle, either mar or xe}
 
-\item{schema}{XXX}
+\item{schema}{default is "fiskar" and "hafvog". If only interested in reading
+from one of them, specify which.}
 
-\item{id}{synaflokkur}
+\item{id}{synaflokkur. Default is set to 30}
 
-\item{gid}{veidarfaeri}
+\item{gid}{veidarfaeri. Default is set to 73}
 
-\item{cruise}{Heiti leiðangurs}
+\item{cruise}{Heiti leiðangurs. If missing reads in all data from xe.hafvog
+that fall under the criteria id and gid (see above).}
 
-\item{debug}{XXX}
+\item{debug}{Default is 0, normally keep that}
 }
 \description{
 Title

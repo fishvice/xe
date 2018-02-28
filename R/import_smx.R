@@ -1,11 +1,13 @@
 #' Title
 #'
-#' @param con XXX
-#' @param schema XXX
-#' @param id synaflokkur
-#' @param gid veidarfaeri
-#' @param cruise Heiti leiðangurs
-#' @param debug XXX
+#' @param con Connection to Oracle, either mar or xe
+#' @param schema default is "fiskar" and "hafvog". If only interested in reading
+#' from one of them, specify which.
+#' @param id synaflokkur. Default is set to 30
+#' @param gid veidarfaeri. Default is set to 73
+#' @param cruise Heiti leiðangurs. If missing reads in all data from xe.hafvog
+#' that fall under the criteria id and gid (see above).
+#' @param debug Default is 0, normally keep that
 #'
 #' @export
 #library(xe)
@@ -16,7 +18,7 @@
 import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
                        cruise, debug = 0) {
 
-  if(missing(cruise)) stop("Need to specify the current cruise (Leidangur)")
+  #if(missing(cruise)) stop("Need to specify the current cruise (Leidangur)")
 
   # ----------------------------------------------------------------------------
   # Constants
@@ -152,10 +154,17 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
 
   # A. STATIONS DONE - FOR DASHBOARD
   print("Reikna allskonar dót")
-  index.done <-
-    st %>%
-    filter(leidangur %in% cruise) %>%
-    pull(index)
+  if(missing(cruise)) {
+    index.done <-
+      st %>%
+      pull(index)
+  } else {
+    index.done <-
+      st %>%
+      filter(leidangur %in% cruise) %>%
+      pull(index)
+  }
+
   by.tegund.lengd.ar <-
     st %>%
     filter(index %in% index.done) %>%
@@ -279,7 +288,7 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
   }
   sp <-
     lines_list %>%
-    SpatialLines(proj4string = gisland::PRO) %>%
+    SpatialLines(proj4string = PRO) %>%
     SpatialLinesDataFrame(data.frame(id = as.character(tows$id2)))
   sp@data <- cbind(sp@data, tows)
   stadlar.rallstodvar.sp <- sp
@@ -305,7 +314,7 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
   }
   sp <-
     lines_list %>%
-    SpatialLines(proj4string = gisland::PRO) %>%
+    SpatialLines(proj4string = PRO) %>%
     SpatialLinesDataFrame(data.frame(id = as.character(tows$id2)))
   sp@data <- cbind(sp@data, tows)
   st.done.sp <- sp
