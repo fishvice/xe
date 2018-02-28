@@ -54,7 +54,6 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73,
       st %>%
       select(synis_id) %>%
       left_join(lesa_numer(con, schema[i]), by = "synis_id") %>%
-      mutate(fj_alls = fj_maelt + fj_talid) %>%
       select(synis_id, tegund, fj_maelt, fj_talid, fj_alls) %>%
       collect(n = Inf) %>%
       filter(!is.na(tegund)) %>%
