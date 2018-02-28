@@ -22,9 +22,9 @@ knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 
 # Preamble
 
-The xe-package allows seamless connection to the MRI Oracle xe-database via R. Unlike the mar-database the xe-database resides on personal computers and is what the software Hafvog communicates with. The xe-database has at minimum one schema - hafvog. This schema is contains all cruises that are visible in the Hafvog-software. Normally an additional schema is included in the xe-database - fiskar. This contains a copy of most tables that are stored in the MRI Oracle mar-database.
+The xe-package allows seamless connection to the MRI Oracle xe-database via R. Unlike the mar-database the xe-database resides on personal computers and is what the software Hafvog communicates with. The xe-database has at minimum one schema - hafvog. This schema is contains all cruises that are visible in the Hafvog-software. Normally an additional schema is included in the xe-database - fiskar. This contains a copy of most tables that are stored in schema fiskar in the MRI Oracle mar-database.
 
-The xe-package is supposed to mimic a proportion of the functional calls that reside in the mar-package (it is likely that functionality of the former will soon be moved into the latter package, i.e. xe will soon become redundant).
+The xe-package is supposed to mimic a proportion of the functional calls that reside in the mar-package (it is likely that functionality of the former will soon be moved into the latter package, i.e. xe will soon become redundant :-).
 
 # Basic functionality
 
@@ -50,13 +50,13 @@ le.sql <- lesa_lengdir(con, schema = "fiskar")
 nu.sql <- lesa_numer(con, schema = "fiskar")
 ```
 
-Take note that in the above the objects st, le and nu are not yet local R-dataframes, just an sql-script that also gives a peek at the first 10 records in the database. To create a local dataframe one can import the data via the collect-function. E.g.
+Take note that in the above the objects xx.sql are not yet local R-dataframes, just an sql-script that also gives a peek at the first 10 records in the database. To create a local dataframe one can import the data via the collect-function. E.g.
 
 ```{r}
 st <- st.sql %>% collect(n = Inf)
 ```
 
-In general things then should work the same as in the mar-package, except that lon and lat in the station-table are still in the DDMMmm-format.
+In general things then should work the same as in the mar-package, except that lon and lat in the station-table are still in the DDMMmm-format. Here one could use the `geoconvert`-function from the geo-package.
 
 
 # Working with survey data
