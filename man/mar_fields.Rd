@@ -15,5 +15,5 @@ mar_fields(mar, table)
 dataframe
 }
 \description{
-Fallið ...
+Fallid ...
 }

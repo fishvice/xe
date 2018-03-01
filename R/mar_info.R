@@ -1,6 +1,6 @@
 #' mar_tables
 #'
-#' @description Fallið myndar tengingu við schema all_tables
+#' @description Fallid myndar tengingu við schema all_tables
 #'
 #' @param mar src_oracle tenging við oracle
 #' @param schema character vector specifying schema name, e.g. "fiskar"
@@ -28,7 +28,7 @@ mar_tables <- function(mar, schema) {
 
 #' mar_fields
 #'
-#' @description Fallið ...
+#' @description Fallid ...
 #'
 #' @param mar src_oracle tenging við oracle
 #' @param table character vector specifying table names, e.g. "fiskar.stodvar"

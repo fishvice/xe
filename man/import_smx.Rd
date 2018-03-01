@@ -2,10 +2,9 @@
 % Please edit documentation in R/import_smx.R
 \name{import_smx}
 \alias{import_smx}
-\title{Title}
+\title{Import data from the Oracle xe-database}
 \usage{
-import_smx(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73, cruise,
-  debug = 0)
+import_smx(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73)
 }
 \arguments{
 \item{con}{Connection to Oracle, either mar or xe}
@@ -16,12 +15,7 @@ from one of them, specify which.}
 \item{id}{synaflokkur. Default is set to 30}
 
 \item{gid}{veidarfaeri. Default is set to 73}
-
-\item{cruise}{Heiti leiðangurs. If missing reads in all data from xe.hafvog
-that fall under the criteria id and gid (see above).}
-
-\item{debug}{Default is 0, normally keep that}
 }
 \description{
-Title
+Import data from the Oracle xe-database
 }
