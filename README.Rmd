@@ -1,8 +1,6 @@
 ---
 title: "xe"
-output: 
-  html_document: 
-    keep_md: yes
+output: md_document
 ---
 
 ```{r setup, echo = FALSE}
@@ -16,6 +14,7 @@ knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 The xe-package allows seamless connection to the MRI Oracle xe-database via R. Unlike the mar-database the xe-database resides on personal computers and is what the software Hafvog communicates with. The xe-database has at minimum one schema - hafvog. This schema is contains all cruises that are visible in the Hafvog-software. Normally an additional schema is included in the xe-database - fiskar. This contains a copy of most tables that are stored in schema fiskar in the MRI Oracle mar-database.
 
 The xe-package is supposed to mimic a proportion of the functional calls that reside in the mar-package (it is likely that functionality of the former will soon be moved into the latter package, i.e. xe will soon become redundant :-).
+
 
 ## Installing:
 
@@ -38,6 +37,11 @@ To access the data in the hafvog-schema (i.e. the cruises currently visible as "
 st.sql <- lesa_stodvar(con, schema = "hafvog")
 le.sql <- lesa_lengdir(con, schema = "hafvog")
 nu.sql <- lesa_numer(con, schema = "hafvog")
+```
+
+To take a peek of what variables are in the data use the `glimpse`-funtion. E.g. 
+```{r}
+glimpse(st.sql)
 ```
 
 If one is interested in working with the data in schema fiskar one simply does:
