@@ -7,10 +7,10 @@ Preamble
 The xe-package allows seamless connection to the MRI Oracle xe-database
 via R. Unlike the mar-database the xe-database resides on personal
 computers and is what the software Hafvog communicates with. The
-xe-database has at minimum one schema - hafvog. This schema is contains
-all cruises that are visible in the Hafvog-software. Normally an
-additional schema is included in the xe-database - fiskar. This contains
-a copy of most tables that are stored in schema fiskar in the MRI Oracle
+xe-database has at minimum one schema - hafvog. This schema contains all
+cruises that are visible in the Hafvog-software. Normally an additional
+schema is included in the xe-database - fiskar. This contains a copy of
+most tables that are stored in schema fiskar in the MRI Oracle
 mar-database.
 
 The xe-package is supposed to mimic a proportion of the functional calls
@@ -89,6 +89,9 @@ First we provide and import from schema hafvog:
       st.sql %>% 
       select(synis_id, ar) %>% 
       left_join(lesa_kvarnir(con, "hafvog")) %>% 
+      collect(n = Inf)
+    st <- 
+      st.sql %>% 
       collect(n = Inf)
 
 One could repeat this process for data in schema fiskar and then combine
