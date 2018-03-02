@@ -9,6 +9,9 @@
 #' @export
 import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73) {
 
+
+  print(warning("This function will no longer be supported, use munge_to_smxapp"))
+
   #if(missing(cruise)) stop("Need to specify the current cruise (Leidangur)")
 
   # ----------------------------------------------------------------------------
