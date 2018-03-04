@@ -26,7 +26,7 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73) {
 
   # ----------------------------------------------------------------------------
   # IMPORT
-  print("Lesa úr Hafvog")
+  print("Lesa ur XE-gagnagrunninum")
 
   # A. FISKAR ------------------------------------------------------------------
   st.list <- nu.list <- le.list <- kv.list <- list()
