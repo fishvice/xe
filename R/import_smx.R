@@ -106,7 +106,71 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73) {
   le <- bind_rows(le.list)
   kv <- bind_rows(kv.list)
 
-  ret <- list(st = st, nu = nu, le = le, kv = kv)
+  skraning <-
+    tbl_mar(con, "hafvog.skraning") %>%
+    collect(n = Inf) %>%
+    mutate(synis_id = -synis_id)
+
+  # ----------------------------------------------------------------------------
+  # Other stuff needed from hafvog
+  # B. STADLAR -----------------------------------------------------------------
+
+  stadlar.rallstodvar <-
+    lesa_stadla_rallstodvar(con) %>%
+    filter(veidarfaeri_id == gid,
+           synaflokkur == id) %>%
+    collect(n = Inf) %>%
+    geo::geoconvert(col.names = c("kastad_v", "kastad_n")) %>%
+    geo::geoconvert(col.names = c("hift_v",   "hift_n"))
+
+  stadlar.tegundir <-
+    lesa_stadla_tegund_smb(con) %>%
+    filter(leidangur_id == 1) %>%
+    arrange(tegund) %>%
+    collect(n = Inf) %>%
+    gather(variable, value, lifur_low:kynkirtlar_high) %>%
+    mutate(value = value / 100) %>%
+    spread(variable, value)
+
+  stadlar.lw <-
+    lesa_stadla_lw(con) %>%
+    collect(n = Inf) %>%
+    mutate(osl1 = osl * (1 - fravik),
+           osl2 = osl * (1 + fravik),
+           sl1 = sl * (1 - fravik),
+           sl2 = sl * (1 + fravik)) %>%
+    select(tegund, lengd, osl1:sl2)
+
+  fisktegundir <-
+    tbl_mar(con, "hafvog.fisktegundir") %>%
+    select(tegund, heiti) %>%
+    arrange(tegund) %>%
+    collect(n = Inf)
+
+  aid <-
+    tbl_mar(con, "hafvog.maeliatridi") %>%
+    collect() %>%
+    rename(aid = id, adgerd = heiti) %>%
+    collect(n = Inf)
+  sid <-
+    tbl_mar(con, "hafvog.fisktegundir") %>%
+    select(sid = tegund, tegund = heiti) %>%
+    arrange(tegund) %>%
+    collect(n = Inf)
+  prey <-
+    tbl_mar(con, "hafvog.f_tegundir") %>%
+    collect(n = Inf)
+
+  other.stuff <- list(stadlar.rallstodvar = stadlar.rallstodvar,
+                      stadlar.tegundir = stadlar.tegundir,
+                      stadlar.lw = stadlar.lw,
+                      fisktegundir = fisktegundir,
+                      aid = aid,
+                      sid = sid,
+                      prey = prey)
+
+  ret <- list(st = st, nu = nu, le = le, kv = kv, skraning = skraning,
+              other.stuff = other.stuff)
 
   return(ret)
 }
