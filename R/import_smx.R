@@ -118,7 +118,7 @@ import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73) {
   stadlar.rallstodvar <-
     lesa_stadla_rallstodvar(con) %>%
     filter(veidarfaeri_id == gid,
-           synaflokkur == id) %>% glimpse()
+           synaflokkur == id) %>%
     collect(n = Inf) %>%
     geo::geoconvert(col.names = c("kastad_v", "kastad_n")) %>%
     geo::geoconvert(col.names = c("hift_v",   "hift_n"))
