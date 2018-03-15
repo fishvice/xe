@@ -93,19 +93,3 @@ First we provide and import from schema hafvog:
     st <- 
       st.sql %>% 
       collect(n = Inf)
-
-One could repeat this process for data in schema fiskar and then combine
-(rbind) the data from the two schema sources. A little wrapper for doing
-that is provided by the function `import_smx`:
-
-    res <- import_smx(con)
-
-The function returns a list of the fiskar dataframe from both schema
-hafvog and schema fiskar (synaflokkur = 30 and veidarfaeri = 73 are the
-default arguments in the call). Individual dataframes can be "retrieved"
-by:
-
-    st <- res$st
-    nu <- res$nu
-    le <- res$le
-    kv <- res$kv
