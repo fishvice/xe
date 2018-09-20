@@ -1,23 +1,20 @@
 #' Import data from the Oracle xe-database
 #'
 #' @param con Connection to Oracle, either mar or xe
+#' @param year Current cruise year
 #' @param schema default is "fiskar" and "hafvog". If only interested in reading
 #' from one of them, specify which.
 #' @param id synaflokkur. Default is set to 30
 #' @param gid veidarfaeri. Default is set to 73
 #'
 #' @export
-import_smx <- function(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73) {
+import_smx <- function(con, year = year(now()), schema = c("fiskar", "hafvog"), id = 30, gid = 73) {
 
-
-  #print(warning("This function will no longer be supported, use munge_to_smxapp"))
-
-  #if(missing(cruise)) stop("Need to specify the current cruise (Leidangur)")
 
   # ----------------------------------------------------------------------------
   # Constants
 
-  now.year <- lubridate::now() %>% lubridate::year()
+  now.year <- year
   #now.year <- now.year - debug
   #min.towlength <- 2             # Minimum "acceptable" towlength
   #max.towlength <- 8             # Maximum "acceptable" towlength
