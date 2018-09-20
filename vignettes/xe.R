@@ -46,12 +46,3 @@ knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 #    left_join(lesa_kvarnir(con, "hafvog")) %>%
 #    collect(n = Inf)
 
-## ------------------------------------------------------------------------
-#  res <- import_smx(con)
-
-## ------------------------------------------------------------------------
-#  st <- res$st
-#  nu <- res$nu
-#  le <- res$le
-#  kv <- res$kv
-

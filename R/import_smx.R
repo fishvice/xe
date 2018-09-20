@@ -1,21 +1,25 @@
 #' Import data from the Oracle xe-database
 #'
 #' @param con Connection to Oracle, either mar or xe
-#' @param year Current cruise year
-#' @param schema default is "fiskar" and "hafvog". If only interested in reading
-#' from one of them, specify which.
 #' @param id synaflokkur. Default is set to 30
 #' @param gid veidarfaeri. Default is set to 73
+#' @param year Current cruise year. If not specifice (default) use current year.
+#' @param schema default is "fiskar" and "hafvog". If only interested in reading
+#' from one of them, specify which.
+
 #'
 #' @export
-import_smx <- function(con, year = year(now()), schema = c("fiskar", "hafvog"), id = 30, gid = 73) {
+import_smx <- function(con, id = 30, gid = 73, year, schema = c("fiskar", "hafvog")) {
 
 
   # ----------------------------------------------------------------------------
   # Constants
+  if(!missing(year)) {
+    now.year <- lubridate::now() %>% lubridate::year()
+  } else {
+    now.year <- year
+  }
 
-  now.year <- year
-  #now.year <- now.year - debug
   #min.towlength <- 2             # Minimum "acceptable" towlength
   #max.towlength <- 8             # Maximum "acceptable" towlength
   #std.towlength <- 4             # Standard tow length is 4 nautical miles
@@ -103,6 +107,7 @@ import_smx <- function(con, year = year(now()), schema = c("fiskar", "hafvog"), 
   le <- bind_rows(le.list)
   kv <- bind_rows(kv.list)
 
+  # Find a code solution when accessing mar.hafvog.skraning
   skraning <-
     tbl_mar(con, "hafvog.skraning") %>%
     collect(n = Inf) %>%
@@ -114,15 +119,15 @@ import_smx <- function(con, year = year(now()), schema = c("fiskar", "hafvog"), 
 
   stadlar.rallstodvar <-
     lesa_stadla_rallstodvar(con) %>%
-    filter(veidarfaeri_id == gid,
-           synaflokkur == id) %>%
+    filter(veidarfaeri_id %in% gid,
+           synaflokkur %in% id) %>%
     collect(n = Inf) %>%
     geo::geoconvert(col.names = c("kastad_v", "kastad_n")) %>%
     geo::geoconvert(col.names = c("hift_v",   "hift_n"))
 
   stadlar.tegundir <-
     lesa_stadla_tegund_smb(con) %>%
-    filter(leidangur_id == 0) %>%
+    filter(leidangur_id == stadlar.rallstodvar$leidangur_id[[1]]) %>%
     arrange(tegund) %>%
     collect(n = Inf) %>%
     gather(variable, value, lifur_low:kynkirtlar_high) %>%

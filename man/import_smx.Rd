@@ -4,17 +4,19 @@
 \alias{import_smx}
 \title{Import data from the Oracle xe-database}
 \usage{
-import_smx(con, schema = c("fiskar", "hafvog"), id = 30, gid = 73)
+import_smx(con, id = 30, gid = 73, year, schema = c("fiskar", "hafvog"))
 }
 \arguments{
 \item{con}{Connection to Oracle, either mar or xe}
 
-\item{schema}{default is "fiskar" and "hafvog". If only interested in reading
-from one of them, specify which.}
-
 \item{id}{synaflokkur. Default is set to 30}
 
 \item{gid}{veidarfaeri. Default is set to 73}
+
+\item{year}{Current cruise year. If not specifice (default) use current year.}
+
+\item{schema}{default is "fiskar" and "hafvog". If only interested in reading
+from one of them, specify which.}
 }
 \description{
 Import data from the Oracle xe-database
