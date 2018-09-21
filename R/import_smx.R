@@ -14,7 +14,7 @@ import_smx <- function(con, id = 30, gid = 73, year, schema = c("fiskar", "hafvo
 
   # ----------------------------------------------------------------------------
   # Constants
-  if(!missing(year)) {
+  if(missing(year)) {
     now.year <- lubridate::now() %>% lubridate::year()
   } else {
     now.year <- year
