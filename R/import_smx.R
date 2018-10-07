@@ -6,10 +6,12 @@
 #' @param year Current cruise year. If not specifice (default) use current year.
 #' @param schema default is "fiskar" and "hafvog". If only interested in reading
 #' from one of them, specify which.
-
+#' @param store A boolean, if TRUE then the returned returned object is also
+#' saved as hafvog.rds in directory data
 #'
 #' @export
-import_smx <- function(con, id = 30, gid = 73, year, schema = c("fiskar", "hafvog")) {
+import_smx <- function(con, id = 30, gid = 73, year, schema = c("fiskar", "hafvog"),
+                       store = FALSE) {
 
 
   # ----------------------------------------------------------------------------
@@ -19,10 +21,6 @@ import_smx <- function(con, id = 30, gid = 73, year, schema = c("fiskar", "hafvo
   } else {
     now.year <- year
   }
-
-  #min.towlength <- 2             # Minimum "acceptable" towlength
-  #max.towlength <- 8             # Maximum "acceptable" towlength
-  #std.towlength <- 4             # Standard tow length is 4 nautical miles
 
 
   # ----------------------------------------------------------------------------
@@ -35,83 +33,69 @@ import_smx <- function(con, id = 30, gid = 73, year, schema = c("fiskar", "hafvo
 
     st <-
       lesa_stodvar(con, schema[i]) %>%
-      filter(synaflokkur %in% id, veidarfaeri %in% gid)
+      dplyr::filter(synaflokkur %in% id, veidarfaeri %in% gid)
 
     if(schema[i] == "fiskar") {
       st <-
         st %>%
-        filter(ar < now.year)
+        dplyr::filter(ar < now.year)
     } else {
       st <-
         st %>%
-        filter(ar == now.year)
+        dplyr::filter(ar == now.year)
     }
 
     nu.list[[i]] <-
       st %>%
-      select(synis_id) %>%
-      left_join(lesa_numer(con, schema[i]), by = "synis_id") %>%
-      select(synis_id, tegund, fj_maelt, fj_talid, fj_alls) %>%
-      collect(n = Inf) %>%
-      filter(!is.na(tegund)) #%>%
-      #complete(synis_id, tegund) %>%
-      #replace_na(list(fj_maelt = 0, fj_talid = 0, fj_alls = 0))
+      dplyr::select(synis_id) %>%
+      dplyr::left_join(lesa_numer(con, schema[i]), by = "synis_id") %>%
+      dplyr::select(synis_id, tegund, fj_maelt, fj_talid, fj_alls) %>%
+      dplyr::collect(n = Inf) %>%
+      dplyr::filter(!is.na(tegund))
 
     le.list[[i]] <-
       st %>%
-      select(synis_id) %>%
-      left_join(lesa_lengdir(con, schema[i]) %>%
-                  group_by(synis_id, tegund, lengd) %>%
-                  summarise(fjoldi = sum(fjoldi, na.rm = TRUE)) %>%
-                  ungroup(), by = "synis_id") %>%
-      collect(n = Inf)  %>%
-      filter(!is.na(tegund)) #%>%
-      #complete(synis_id, tegund) %>%
-      #replace_na(list(lengd = 0, fjoldi = 0))
+      dplyr::select(synis_id) %>%
+      dplyr::left_join(lesa_lengdir(con, schema[i]) %>%
+                         dplyr::group_by(synis_id, tegund, lengd) %>%
+                         dplyr::summarise(fjoldi = sum(fjoldi, na.rm = TRUE)) %>%
+                         dplyr::ungroup(), by = "synis_id") %>%
+      dplyr::collect(n = Inf)  %>%
+      dplyr::filter(!is.na(tegund))
 
     kv.list[[i]] <-
       st %>%
-      select(synis_id) %>%
-      left_join(lesa_kvarnir(con, schema[i]), by = "synis_id") %>%
-      collect(n = Inf)
+      dplyr::select(synis_id) %>%
+      dplyr::left_join(lesa_kvarnir(con, schema[i]), by = "synis_id") %>%
+      dplyr::collect(n = Inf)
 
     st.list[[i]] <-
       st %>%
-      collect(n = Inf) %>%
-      mutate(lon1 = -kastad_v_lengd,
-             lat1 = kastad_n_breidd,
-             lon2 = -hift_v_lengd,
-             lat2 = hift_n_breidd) %>%
+      dplyr::collect(n = Inf) %>%
+      dplyr::mutate(lon1 = -kastad_v_lengd,
+                    lat1 = kastad_n_breidd,
+                    lon2 = -hift_v_lengd,
+                    lat2 = hift_n_breidd) %>%
       geo::geoconvert(col.names = c("lat1", "lon1")) %>%
       geo::geoconvert(col.names = c("lat2", "lon2")) %>%
-      mutate(lon = (lon1 + lon2) / 2,
-             lat = (lat1 + lat2) / 2,
-             toglengd = ifelse(is.na(toglengd), 4, toglengd))
-
-    #le.list[[i]] <-
-    #  le.list[[i]] %>%
-    #  left_join(nu.list[[i]], by = c("synis_id", "tegund")) %>%
-    #  mutate(r = ifelse(fjoldi == 0, 1, fj_alls/fj_maelt),
-    #         n.rai = ifelse(fjoldi != 0, fjoldi * r, fj_alls)) %>%
-    #  left_join(st.list[[i]] %>% select(synis_id, ar, reitur, tognumer, toglengd), by = "synis_id") %>%
-    #  mutate(toglengd = if_else(toglengd > max.towlength, max.towlength, toglengd),
-    #         toglengd = if_else(toglengd < min.towlength, min.towlength, toglengd),
-    #         n.std = n.rai * std.towlength/toglengd,
-    #         b.std  = ifelse(is.na(n.std), 0, n.rai) * 0.00001 * lengd^3) %>%
-    #  select(synis_id, ar, reitur, tognumer, toglengd, tegund:n.rai, n.std, b.std)
+      dplyr::mutate(lon = (lon1 + lon2) / 2,
+                    lat = (lat1 + lat2) / 2,
+                    toglengd = ifelse(is.na(toglengd), 4, toglengd))
 
   }
 
-  st <- bind_rows(st.list) %>% mutate(index = reitur * 100 + tognumer)
-  nu <- bind_rows(nu.list)
-  le <- bind_rows(le.list)
-  kv <- bind_rows(kv.list)
+  st <-
+    dplyr::bind_rows(st.list) %>%
+    dplyr::mutate(index = reitur * 100 + tognumer)
+  nu <- dplyr::bind_rows(nu.list)
+  le <- dplyr::bind_rows(le.list)
+  kv <- dplyr::bind_rows(kv.list)
 
   # Find a code solution when accessing mar.hafvog.skraning
   skraning <-
     tbl_mar(con, "hafvog.skraning") %>%
-    collect(n = Inf) %>%
-    mutate(synis_id = -synis_id)
+    dplyr::collect(n = Inf) %>%
+    dplyr::mutate(synis_id = -synis_id)
 
   # ----------------------------------------------------------------------------
   # Other stuff needed from hafvog
@@ -119,49 +103,51 @@ import_smx <- function(con, id = 30, gid = 73, year, schema = c("fiskar", "hafvo
 
   stadlar.rallstodvar <-
     lesa_stadla_rallstodvar(con) %>%
-    filter(veidarfaeri_id %in% gid,
-           synaflokkur %in% id) %>%
-    collect(n = Inf) %>%
+    dplyr::filter(veidarfaeri_id %in% gid,
+                  synaflokkur %in% id) %>%
+    dplyr::collect(n = Inf) %>%
+    # fix an error in hift_v for SMH, should be corrected in database
+    dplyr::mutate(hift_v = ifelse(hift_v == -2444550, -244455, hift_v)) %>%
     geo::geoconvert(col.names = c("kastad_v", "kastad_n")) %>%
     geo::geoconvert(col.names = c("hift_v",   "hift_n"))
 
   stadlar.tegundir <-
     lesa_stadla_tegund_smb(con) %>%
-    filter(leidangur_id == stadlar.rallstodvar$leidangur_id[[1]]) %>%
-    arrange(tegund) %>%
-    collect(n = Inf) %>%
-    gather(variable, value, lifur_low:kynkirtlar_high) %>%
-    mutate(value = value / 100) %>%
-    spread(variable, value)
+    dplyr::filter(leidangur_id == stadlar.rallstodvar$leidangur_id[[1]]) %>%
+    dplyr::arrange(tegund) %>%
+    dplyr::collect(n = Inf) %>%
+    tidyr::gather(variable, value, lifur_low:kynkirtlar_high) %>%
+    dplyr::mutate(value = value / 100) %>%
+    tidyr::spread(variable, value)
 
   stadlar.lw <-
     lesa_stadla_lw(con) %>%
-    collect(n = Inf) %>%
-    mutate(osl1 = osl * (1 - fravik),
-           osl2 = osl * (1 + fravik),
-           sl1 = sl * (1 - fravik),
-           sl2 = sl * (1 + fravik)) %>%
-    select(tegund, lengd, osl1:sl2)
+    dplyr::collect(n = Inf) %>%
+    dplyr::mutate(osl1 = osl * (1 - fravik),
+                  osl2 = osl * (1 + fravik),
+                  sl1 = sl * (1 - fravik),
+                  sl2 = sl * (1 + fravik)) %>%
+    dplyr::select(tegund, lengd, osl1:sl2)
 
   fisktegundir <-
     tbl_mar(con, "hafvog.fisktegundir") %>%
-    select(tegund, heiti) %>%
-    arrange(tegund) %>%
-    collect(n = Inf)
+    dplyr::select(tegund, heiti) %>%
+    dplyr::arrange(tegund) %>%
+    dplyr::collect(n = Inf)
 
   aid <-
     tbl_mar(con, "hafvog.maeliatridi") %>%
-    collect() %>%
-    rename(aid = id, adgerd = heiti) %>%
-    collect(n = Inf)
+    dplyr::collect() %>%
+    dplyr::rename(aid = id, adgerd = heiti) %>%
+    dplyr::collect(n = Inf)
   sid <-
     tbl_mar(con, "hafvog.fisktegundir") %>%
-    select(sid = tegund, tegund = heiti) %>%
-    arrange(tegund) %>%
-    collect(n = Inf)
+    dplyr::select(sid = tegund, tegund = heiti) %>%
+    dplyr::arrange(tegund) %>%
+    dplyr::collect(n = Inf)
   prey <-
     tbl_mar(con, "hafvog.f_tegundir") %>%
-    collect(n = Inf)
+    dplyr::collect(n = Inf)
 
   other.stuff <- list(stadlar.rallstodvar = stadlar.rallstodvar,
                       stadlar.tegundir = stadlar.tegundir,
@@ -173,6 +159,12 @@ import_smx <- function(con, id = 30, gid = 73, year, schema = c("fiskar", "hafvo
 
   ret <- list(st = st, nu = nu, le = le, kv = kv, skraning = skraning,
               other.stuff = other.stuff)
+
+  if(store) {
+
+    if(!dir.exists) dir.create("data2")
+    res %>% readr::write_rds(path = "data2/hafvog.rds")
+  }
 
   return(ret)
 }
