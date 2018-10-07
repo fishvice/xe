@@ -163,7 +163,7 @@ import_smx <- function(con, id = 30, gid = 73, year, schema = c("fiskar", "hafvo
   if(store) {
 
     if(!dir.exists("data2")) dir.create("data2")
-    res %>% readr::write_rds(path = "data2/hafvog.rds")
+    ret %>% readr::write_rds(path = "data2/hafvog.rds")
   }
 
   return(ret)
