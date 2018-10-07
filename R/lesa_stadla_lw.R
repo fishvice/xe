@@ -10,23 +10,26 @@ lesa_stadla_lw <- function(con) {
 
   d <-
     tbl_mar(con, "hafvog.fiskteg_lengd_thyngd") %>%
-    rename(tegund = fisktegund_id) %>%
-    mutate(fravik = fravik/100) %>%
-    collect(n = Inf)
-  x <- d %>% group_by(tegund) %>% summarise(l.max = max(lengd))
+    dplyr::rename(tegund = fisktegund_id) %>%
+    dplyr::mutate(fravik = fravik/100) %>%
+    dplyr::collect(n = Inf)
+  x <-
+    d %>%
+    dplyr::group_by(tegund) %>%
+    dplyr::summarise(l.max = max(lengd))
 
   expand.grid(tegund = unique(d$tegund),
-                lengd = 1:1500) %>%
-    as_tibble() %>%
-    left_join(x, by = "tegund") %>%
-    filter(lengd <= l.max) %>%
-    select(-l.max) %>%
-    left_join(d, by = c("tegund", "lengd")) %>%
-    arrange(tegund, -lengd) %>%
-    group_by(tegund) %>%
-    fill(oslaegt_a:fravik) %>%
-    ungroup() %>%
-    mutate(osl = oslaegt_a * lengd^oslaegt_b,
-           sl = slaegt_a * lengd^slaegt_b)
+              lengd = 1:1500) %>%
+    dplyr::as_tibble() %>%
+    dplyr::left_join(x, by = "tegund") %>%
+    dplyr::filter(lengd <= l.max) %>%
+    dplyr::select(-l.max) %>%
+    dplyr::left_join(d, by = c("tegund", "lengd")) %>%
+    dplyr::arrange(tegund, -lengd) %>%
+    dplyr::group_by(tegund) %>%
+    tidyr::fill(oslaegt_a:fravik) %>%
+    dplyr::ungroup() %>%
+    dplyr:: mutate(osl = oslaegt_a * lengd^oslaegt_b,
+                   sl = slaegt_a * lengd^slaegt_b)
 
 }

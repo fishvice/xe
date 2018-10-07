@@ -10,11 +10,11 @@
 mar_tables <- function(mar, schema) {
 
   d <- tbl_mar(mar, "sys.all_tables")
-#  v <- tbl_mar(mar,'sys.all_views') %>%
-#    dplyr::select(owner,table_name = view_name) %>%
-#    dplyr::mutate(tablespace_name = NULL, num_rows = NULL, last_analyze = NULL)
+
   if(!missing(schema)) {
-    d <- d %>% filter(owner %in% toupper(schema))
+    d <-
+      d %>%
+      dplyr::filter(owner %in% toupper(schema))
   }
 
   d %>%
@@ -39,14 +39,6 @@ mar_tables <- function(mar, schema) {
 mar_fields <- function(mar, table) {
 
   x <- strsplit(table,'\\.') %>% unlist()
-
-#  tbl_mar(mar,'all_tab_columns') %>%
-#    dplyr::filter(owner == toupper(x[1]),
-#        t          table_name == toupper(x[2])) %>%
-#    dplyr::transmute(owner = lower(owner),
-#                     table_name = lower(table_name),
-#                     column_name = lower(column_name),
-#                     data_type = lower(data_type))
 
   tbl_mar(mar,'sys.all_col_comments') %>%
     dplyr::filter(owner == toupper(x[1]),

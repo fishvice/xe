@@ -4,7 +4,8 @@
 \alias{import_smx}
 \title{Import data from the Oracle xe-database}
 \usage{
-import_smx(con, id = 30, gid = 73, year, schema = c("fiskar", "hafvog"))
+import_smx(con, id = 30, gid = 73, year, schema = c("fiskar", "hafvog"),
+  store = FALSE)
 }
 \arguments{
 \item{con}{Connection to Oracle, either mar or xe}
@@ -17,6 +18,9 @@ import_smx(con, id = 30, gid = 73, year, schema = c("fiskar", "hafvog"))
 
 \item{schema}{default is "fiskar" and "hafvog". If only interested in reading
 from one of them, specify which.}
+
+\item{store}{A boolean, if TRUE then the returned returned object is also
+saved as hafvog.rds in directory data}
 }
 \description{
 Import data from the Oracle xe-database
