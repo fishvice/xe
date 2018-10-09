@@ -91,9 +91,21 @@ import_smx <- function(con, id = 30, gid = 73, year, schema = c("fiskar", "hafvo
   le <- dplyr::bind_rows(le.list)
   kv <- dplyr::bind_rows(kv.list)
 
-  # Find a code solution when accessing mar.hafvog.skraning
   skraning <-
-    tbl_mar(con, "hafvog.skraning") %>%
+    tbl_mar(con, "hafvog.stodvar") %>%
+    dplyr::select(synis_id:heildarafli, synaflokkur) %>%
+    dplyr::mutate(ar = to_number(to_char(dags, "YYYY"))) %>%
+    dplyr::left_join(tbl_mar(con, "hafvog.togstodvar") %>%
+                       dplyr::select(synis_id:eykt), by = "synis_id") %>%
+    dplyr::left_join(tbl_mar(con, "hafvog.umhverfi") %>%
+                       dplyr::select(synis_id:sjondypi), by = "synis_id") %>%
+    dplyr::mutate(index = reitur * 100 + tognumer) %>%
+    dplyr::filter(synaflokkur %in% id,
+                  veidarfaeri %in% gid,
+                  ar == now.year) %>%
+    dplyr::select(synis_id) %>%
+    dplyr::left_join(tbl_mar(con, "hafvog.skraning") %>%
+                     by = "synis_id") %>%
     dplyr::collect(n = Inf) %>%
     dplyr::mutate(synis_id = -synis_id)
 
