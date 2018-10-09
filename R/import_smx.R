@@ -104,7 +104,7 @@ import_smx <- function(con, id = 30, gid = 73, year, schema = c("fiskar", "hafvo
                   veidarfaeri %in% gid,
                   ar == now.year) %>%
     dplyr::select(synis_id) %>%
-    dplyr::left_join(tbl_mar(con, "hafvog.skraning") %>%
+    dplyr::left_join(tbl_mar(con, "hafvog.skraning"),
                      by = "synis_id") %>%
     dplyr::collect(n = Inf) %>%
     dplyr::mutate(synis_id = -synis_id)
