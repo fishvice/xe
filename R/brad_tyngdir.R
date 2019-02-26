@@ -1,5 +1,4 @@
-#' Title
-# ATH: Þarf að bæta við þyngdum úr sparimælingu (maeliadgerd 22)
+#' @title brad_thyngdir
 #'
 #' @param con
 #'

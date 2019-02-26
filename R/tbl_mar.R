@@ -1,9 +1,8 @@
-#' Connection to mar
+#' @title tbl_mar
 #'
 #' @param con tenging við oraclegrunn
 #' @param tbl nafn oracle töflu
 #'
-#' @return fyrirspurn
 #'
 #' @export
 #'

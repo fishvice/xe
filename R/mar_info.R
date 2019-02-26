@@ -1,11 +1,10 @@
-#' mar_tables
+#' @title mar_tables
 #'
 #' @description Fallid myndar tengingu við schema all_tables
 #'
 #' @param mar src_oracle tenging við oracle
 #' @param schema character vector specifying schema name, e.g. "fiskar"
 #'
-#' @return dataframe
 #' @export
 mar_tables <- function(mar, schema) {
 
@@ -26,15 +25,13 @@ mar_tables <- function(mar, schema) {
 
 }
 
-#' mar_fields
+#' @title mar_fields
 #'
-#' @description Fallid ...
+#' @description Fallid myndar tengingu
 #'
 #' @param mar src_oracle tenging við oracle
 #' @param table character vector specifying table names, e.g. "fiskar.stodvar"
 #'
-#'
-#' @return dataframe
 #' @export
 mar_fields <- function(mar, table) {
 
@@ -48,4 +45,3 @@ mar_fields <- function(mar, table) {
                      column_name = lower(column_name),
                      comments = comments)
 }
-

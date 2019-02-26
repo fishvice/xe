@@ -3,6 +3,7 @@
 export()
 export(brad_lengdir)
 export(brad_tegund)
+export(brad_thyngdir)
 export(connect_xe)
 export(import_smx)
 export(lesa_kvarnir)
