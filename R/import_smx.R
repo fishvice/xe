@@ -1,18 +1,15 @@
 #' Import data from the Oracle xe-database
 #'
-#' @param con Connection to Oracle, either mar or xe
 #' @param id synaflokkur. Default is set to 30
 #' @param gid veidarfaeri. Default is set to 73
-#' @param year Current cruise year. If not specifice (default) use current year.
-#' @param schema default is "fiskar" and "hafvog". If only interested in reading
-#' from one of them, specify which.
+#' @param year Current cruise year. If not specificed (default) use current (computer) year.
 #' @param store A boolean, if TRUE then the returned returned object is also
 #' saved as hafvog.rds in directory data
 #'
 #' @export
-import_smx <- function(con, id = 30, gid = 73, year, schema = c("fiskar", "hafvog"),
-                       store = FALSE) {
+import_smx <- function(id = 30, gid = 73, year, store = FALSE) {
 
+  schema <- c("fiskar", "hafvog")
 
   # ----------------------------------------------------------------------------
   # Constants
@@ -30,6 +27,20 @@ import_smx <- function(con, id = 30, gid = 73, year, schema = c("fiskar", "hafvo
   # A. FISKAR ------------------------------------------------------------------
   st.list <- nu.list <- le.list <- kv.list <- list()
   for(i in 1:length(schema)) {
+
+    if(schema[i] == "fiskar") {
+      user <- password <- "gagnasja"
+    } else {
+      user <- "hafvog_user"
+      password <- "hafvog"
+    }
+    con <- DBI::dbConnect(DBI::dbDriver("Oracle"),
+                            user = user,
+                            password = password,
+                            host = "localhost",
+                            port = 1521,
+                            dbname = "xe")
+
 
     st <-
       lesa_stodvar(con, schema[i]) %>%
@@ -157,8 +168,16 @@ import_smx <- function(con, id = 30, gid = 73, year, schema = c("fiskar", "hafvo
     dplyr::select(sid = tegund, tegund = heiti) %>%
     dplyr::arrange(tegund) %>%
     dplyr::collect(n = Inf)
-  prey <-
+  prey_names <-
     tbl_mar(con, "hafvog.f_tegundir") %>%
+    dplyr::collect(n = Inf)
+
+
+  pred <-
+    hv_pred(con) %>%
+    dplyr::collect(n = Inf)
+  prey <-
+    hv_prey(con) %>%
     dplyr::collect(n = Inf)
 
   other.stuff <- list(stadlar.rallstodvar = stadlar.rallstodvar,
@@ -167,7 +186,11 @@ import_smx <- function(con, id = 30, gid = 73, year, schema = c("fiskar", "hafvo
                       fisktegundir = fisktegundir,
                       aid = aid,
                       sid = sid,
-                      prey = prey)
+                      prey_names = prey_names,
+                      prey = prey,
+                      pred = pred)
+
+
 
   ret <- list(st = st, nu = nu, le = le, kv = kv, skraning = skraning,
               other.stuff = other.stuff)
