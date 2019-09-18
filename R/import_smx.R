@@ -134,9 +134,10 @@ import_smx <- function(id = 30, gid = 73, year, store = FALSE) {
     geo::geoconvert(col.names = c("kastad_v", "kastad_n")) %>%
     geo::geoconvert(col.names = c("hift_v",   "hift_n"))
 
+  lid <- stadlar.rallstodvar$leidangur_id[[1]]
   stadlar.tegundir <-
     lesa_stadla_tegund_smb(con) %>%
-    dplyr::filter(leidangur_id == stadlar.rallstodvar$leidangur_id[[1]]) %>%
+    dplyr::filter(leidangur_id == lid) %>%
     dplyr::arrange(tegund) %>%
     dplyr::collect(n = Inf) %>%
     tidyr::gather(variable, value, lifur_low:kynkirtlar_high) %>%
