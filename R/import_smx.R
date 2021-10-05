@@ -46,7 +46,7 @@ import_smx <- function(id = 30, gid = 73, year, store = FALSE) {
       lesa_stodvar(con, schema[i]) %>%
       dplyr::filter(synaflokkur %in% id, veidarfaeri %in% gid)
 
-    if(st %>% count() %>% collect() == 0) {
+    if(st %>% dplyr::count() %>% dplyr::collect() == 0) {
       stop("There is no data for specified 'synaflokkur' (id) and 'veidarfaeri' (gid)")
     }
 

@@ -4,7 +4,7 @@
 \alias{connect_xe}
 \title{Title}
 \usage{
-connect_xe(user = "gagnasja", password)
+connect_xe(user = "hafvog_user", password = "hafvog")
 }
 \arguments{
 \item{user}{XX}

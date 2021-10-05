@@ -4,7 +4,9 @@
 \name{ISN93}
 \alias{ISN93}
 \title{Projection}
-\format{\code{sp::CRS} object}
+\format{
+\code{sp::CRS} object
+}
 \usage{
 ISN93
 }

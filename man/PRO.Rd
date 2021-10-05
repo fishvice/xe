@@ -4,7 +4,9 @@
 \name{PRO}
 \alias{PRO}
 \title{Projection}
-\format{\code{sp::CRS} object}
+\format{
+\code{sp::CRS} object
+}
 \usage{
 PRO
 }
