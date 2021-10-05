@@ -1,31 +1,39 @@
 # space for hafvog
 
+# # want in the end tables from faeda, analogous to something like:
+# res <- read_rds("~/ShinyApps/smbfyrirkongenekkiprest/data2/res.rds")
+# res$other.stuff$pred
+# res$other.stuff$prey
+# pp <- read_rds("~/ShinyApps/smbfyrirkongenekkiprest/data2/pp.rds")
+
+
+
 hv_pred <- function(con) {
   lesa_skraning(con) %>%
-    filter(!is.na(magaastand)) %>%
-    select(synis_id,
+    dplyr::filter(!is.na(magaastand)) %>%
+    dplyr::select(synis_id,
            pred = tegund,
            nr,
            oslaegt,
            slaegt,
            astand = magaastand) %>%
-    left_join(tbl_mar(con, "hafvog.magaastand") %>%
-                select(astand, lysing_astands)) %>%
-    select(-astand) %>%
-    rename(astand = lysing_astands)
+    dplyr::left_join(tbl_mar(con, "hafvog.magaastand") %>%
+                dplyr::select(astand, lysing_astands)) %>%
+    dplyr::select(-astand) %>%
+    dplyr::rename(astand = lysing_astands)
 }
 
 
 hv_prey <- function(con) {
   prey <-
     lesa_skraning(con) %>%
-    filter(maeliadgerd %in% c(20, 21)) %>%
-    rename(prey = tegund,
+    dplyr::filter(maeliadgerd %in% c(20, 21)) %>%
+    dplyr::rename(prey = tegund,
            pred = ranfiskurteg,
            pnr = nr,
            nr = kvarnanr) %>%
     #left_join(lesa_tegundir(con) %>% select(prey = tegund, heiti)) %>%
-    select(synis_id,
+    dplyr::select(synis_id,
            pred,
            nr,
            prey,

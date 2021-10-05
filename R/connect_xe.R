@@ -6,11 +6,7 @@
 #' @param password XX
 #' @export
 #'
-connect_xe <- function(user = "gagnasja", password) {
-
-  if(user == "hafvog_user") stop("sorry, not allowed")
-
-  if(missing(password)) password <- user
+connect_xe <- function(user = "hafvog_user", password = "hafvog") {
 
   DBI::dbConnect(DBI::dbDriver("Oracle"),
                  user = user,
