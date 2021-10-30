@@ -6,12 +6,15 @@
 #' @export
 ora_fields <- function (con, table) {
 
-  x <- strsplit(table, "\\.") %>% unlist()
+  x <- strsplit(table, "\\.") %>% unlist() %>% toupper()
+  own <- x[1]
+  tab <- x[2]
+
   ora_fields(con, "sys.all_col_comments") %>%
-    dplyr::filter(owner == toupper(x[1]), table_name == toupper(x[2])) %>%
-    dplyr::transmute(owner = lower(owner),
-                     table_name = lower(table_name),
-                     column_name = lower(column_name),
+    dplyr::filter(owner == own, table_name == tab) %>%
+    dplyr::transmute(owner = tolower(owner),
+                     table_name = tolower(table_name),
+                     column_name = tolower(column_name),
                      comments = comments)
 
 }
