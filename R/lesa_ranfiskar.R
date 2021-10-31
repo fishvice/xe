@@ -1,6 +1,6 @@
 #' Title
 #'
-#' @param con
+#' @param con Oracle xe connection
 #'
 #' @export
 lesa_ranfiskar <- function(con) {

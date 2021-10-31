@@ -7,7 +7,7 @@
 brad_tegund(con)
 }
 \arguments{
-\item{con}{}
+\item{con}{Oracle xe connection}
 }
 \description{
 Title

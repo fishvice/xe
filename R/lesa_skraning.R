@@ -1,6 +1,6 @@
 #' Title
 #'
-#' @param con
+#' @param con Oracle xe connection
 #'
 #' @export
 lesa_skraning <- function(con) {

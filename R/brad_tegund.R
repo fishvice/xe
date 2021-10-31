@@ -1,7 +1,7 @@
 # PROBLEM: schema orri and schema faeda are likely not in the xe-database
 #' Title
 #'
-#' @param con
+#' @param con Oracle xe connection
 #'
 #' @export
 #'
