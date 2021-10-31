@@ -9,7 +9,7 @@
 lesa_stadla_lw <- function(con) {
 
   d <-
-    tbl_mar(con, "hafvog.fiskteg_lengd_thyngd") %>%
+    tbl_xe(con, "hafvog.fiskteg_lengd_thyngd") %>%
     dplyr::rename(tegund = fisktegund_id) %>%
     dplyr::mutate(fravik = fravik/100) %>%
     dplyr::collect(n = Inf)

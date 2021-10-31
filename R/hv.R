@@ -17,7 +17,7 @@ hv_pred <- function(con) {
            oslaegt,
            slaegt,
            astand = magaastand) %>%
-    dplyr::left_join(tbl_mar(con, "hafvog.magaastand") %>%
+    dplyr::left_join(tbl_xe(con, "hafvog.magaastand") %>%
                 dplyr::select(astand, lysing_astands)) %>%
     dplyr::select(-astand) %>%
     dplyr::rename(astand = lysing_astands)

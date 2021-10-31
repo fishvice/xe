@@ -2,7 +2,7 @@
 
 predator_faeda <- function(con) {
 
-  tbl_mar(con,'faeda.f_fiskar') %>%
+  tbl_xe(con,'faeda.f_fiskar') %>%
     dplyr::mutate(astand = dplyr::case_when(fj_omelt == 1 ~ 4L,
                                             fj_tomra == 1 ~ 2L,
                                             fj_aelt  == 1 ~ 3L,
@@ -19,7 +19,7 @@ predator_faeda <- function(con) {
 
 prey_faeda <- function(con) {
 
-  tbl_mar(con,'faeda.f_hopar') %>%
+  tbl_xe(con,'faeda.f_hopar') %>%
     dplyr::mutate(prey.id = flokk_id,
                   prey = faeduhopur,
                   n.prey = fjoldi,
