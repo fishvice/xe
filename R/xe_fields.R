@@ -1,10 +1,10 @@
-#' Title
+#' Get fields/column names of Oracle xe table
 #'
-#' @param con XXX
-#' @param table XXX
+#' @param con Connection to Oracle xe
+#' @param table Table name as schema.tablename
 #'
 #' @export
-ora_fields <- function (con, table) {
+xe_fields <- function (con, table) {
 
   x <- strsplit(table, "\\.") %>% unlist() %>% toupper()
   own <- x[1]

@@ -1,7 +1,7 @@
 Package: xe
 Type: Package
 Title: dplyr backend to the XE Oracle database
-Version: 0.0.5.9001
+Version: 0.0.5.9002
 Date: 2021-10-31
 Authors@R:
   c(person("Einar", "Hjorleifsson", email = "einarhjorleifsson@gmail.com",role = c("aut", "cre")))

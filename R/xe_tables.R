@@ -1,10 +1,10 @@
-#' Title
+#' Get Oracle xe table names for a scheme
 #'
-#' @param con XXX
-#' @param schema XXX
+#' @param con Connection to Oracle xe
+#' @param schema Scheme name
 #'
 #' @export
-ora_tables <- function (con, schema)
+xe_tables <- function (con, schema)
 {
   d <- tbl_mar(con, "sys.all_tables")
   if (!missing(schema)) {
