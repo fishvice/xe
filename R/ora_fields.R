@@ -10,7 +10,7 @@ ora_fields <- function (con, table) {
   own <- x[1]
   tab <- x[2]
 
-  ora_fields(con, "sys.all_col_comments") %>%
+  xe:::tbl_mar(con, "sys.all_col_comments") %>%
     dplyr::filter(owner == own, table_name == tab) %>%
     dplyr::transmute(owner = tolower(owner),
                      table_name = tolower(table_name),
