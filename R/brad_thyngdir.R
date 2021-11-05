@@ -1,6 +1,6 @@
 #' @title brad_thyngdir
 #'
-#' @param con
+#' @param con Oracle xe connection
 #'
 #' @export
 #'

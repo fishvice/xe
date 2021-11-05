@@ -107,19 +107,19 @@ import_smx <- function(id = 30, gid = 73, year, store = FALSE) {
   kv <- dplyr::bind_rows(kv.list)
 
   skraning <-
-    tbl_mar(con, "hafvog.stodvar") %>%
+    tbl_xe(con, "hafvog.stodvar") %>%
     dplyr::select(synis_id:heildarafli, synaflokkur) %>%
     dplyr::mutate(ar = to_number(to_char(dags, "YYYY"))) %>%
-    dplyr::left_join(tbl_mar(con, "hafvog.togstodvar") %>%
+    dplyr::left_join(tbl_xe(con, "hafvog.togstodvar") %>%
                        dplyr::select(synis_id:eykt), by = "synis_id") %>%
-    dplyr::left_join(tbl_mar(con, "hafvog.umhverfi") %>%
+    dplyr::left_join(tbl_xe(con, "hafvog.umhverfi") %>%
                        dplyr::select(synis_id:sjondypi), by = "synis_id") %>%
     dplyr::mutate(index = reitur * 100 + tognumer) %>%
     dplyr::filter(synaflokkur %in% id,
                   veidarfaeri %in% gid,
                   ar == now.year) %>%
     dplyr::select(synis_id) %>%
-    dplyr::left_join(tbl_mar(con, "hafvog.skraning"),
+    dplyr::left_join(tbl_xe(con, "hafvog.skraning"),
                      by = "synis_id") %>%
     dplyr::collect(n = Inf) %>%
     dplyr::mutate(synis_id = -synis_id)
@@ -158,23 +158,23 @@ import_smx <- function(id = 30, gid = 73, year, store = FALSE) {
     dplyr::select(tegund, lengd, osl1:sl2)
 
   fisktegundir <-
-    tbl_mar(con, "hafvog.fisktegundir") %>%
+    tbl_xe(con, "hafvog.fisktegundir") %>%
     dplyr::select(tegund, heiti) %>%
     dplyr::arrange(tegund) %>%
     dplyr::collect(n = Inf)
 
   aid <-
-    tbl_mar(con, "hafvog.maeliatridi") %>%
+    tbl_xe(con, "hafvog.maeliatridi") %>%
     dplyr::collect() %>%
     dplyr::rename(aid = id, adgerd = heiti) %>%
     dplyr::collect(n = Inf)
   sid <-
-    tbl_mar(con, "hafvog.fisktegundir") %>%
+    tbl_xe(con, "hafvog.fisktegundir") %>%
     dplyr::select(sid = tegund, tegund = heiti) %>%
     dplyr::arrange(tegund) %>%
     dplyr::collect(n = Inf)
   prey_names <-
-    tbl_mar(con, "hafvog.f_tegundir") %>%
+    tbl_xe(con, "hafvog.f_tegundir") %>%
     dplyr::collect(n = Inf)
 
 

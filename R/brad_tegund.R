@@ -1,14 +1,14 @@
 # PROBLEM: schema orri and schema faeda are likely not in the xe-database
 #' Title
 #'
-#' @param con
+#' @param con Oracle xe connection
 #'
 #' @export
 #'
 brad_tegund <- function(con) {
 
-  tbl_mar(con,'faeda.f_tegundir') %>%
-    dplyr::left_join(tbl_mar(con, "orri.fisktegundir") %>%
+  tbl_xe(con,'faeda.f_tegundir') %>%
+    dplyr::left_join(tbl_xe(con, "orri.fisktegundir") %>%
                        dplyr::select(-c(snt:sbn)),
                      by='tegund') %>%
     dplyr::select(-c(heiti,yfir_flokkur,visindaheiti)) %>%

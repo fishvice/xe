@@ -1,12 +1,12 @@
 Package: xe
 Type: Package
 Title: dplyr backend to the XE Oracle database
-Version: 0.0.4.9001
-Date: 2018-10-09
+Version: 0.0.5.9002
+Date: 2021-10-31
 Authors@R:
   c(person("Einar", "Hjorleifsson", email = "einarhjorleifsson@gmail.com",role = c("aut", "cre")))
 Maintainer: Einar Hjorleifsson <einar.hjorleifsson@gmail.com>
-Description: Database utilities for MFRI xe-database
+Description: Database utilities for MFRI xe-database.
 Depends:
     R (>= 3.1.1)
 Imports:
@@ -18,7 +18,8 @@ Imports:
     magrittr,
     readr,
     stats,
-    tidyr
+    tidyr,
+    sp
 License: GPL (>= 2)
 LazyData: TRUE
 URL: http://github.com/fishvice/xe
@@ -28,3 +29,4 @@ Suggests:
     rmarkdown
 VignetteBuilder: knitr
 RoxygenNote: 7.1.2
+Encoding: UTF-8

@@ -7,7 +7,7 @@
 lesa_skraning(con)
 }
 \arguments{
-\item{con}{}
+\item{con}{Oracle xe connection}
 }
 \description{
 Title
