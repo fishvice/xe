@@ -18,7 +18,8 @@ hv_pred <- function(con) {
            slaegt,
            astand = magaastand) %>%
     dplyr::left_join(tbl_xe(con, "hafvog.magaastand") %>%
-                dplyr::select(astand, lysing_astands)) %>%
+                dplyr::select(astand, lysing_astands),
+                by = "astand") %>%
     dplyr::select(-astand) %>%
     dplyr::rename(astand = lysing_astands)
 }
