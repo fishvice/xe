@@ -30,7 +30,7 @@ prey_faeda <- function(con) {
 predator_hafvog <- function(con) {
 
   lesa_skraning(con) %>%
-    filter(!is.na(magaastand)) %>%
+    dplyr::filter(!is.na(magaastand)) %>%
     dplyr::select(synis_id,
            pred = tegund,
            nr,
