@@ -36,9 +36,11 @@ xe::tbl_xe(xe::connect_xe(), "hafvog.maeliatridi") %>%
 xe::munge_for_smxapp(res, cruise = c("TM1-2021", "A15-2021"))
 ```
 
-```{r run_app}
+
+```{r smxapp}
 library(magrittr)
 load("data2/smb_dashboard.rda")
+
 pp <- 
   readr::read_rds("data2/pp.rds") %>% 
   dplyr::mutate(m.thyngd = round(thyngd/n, 2))
@@ -288,9 +290,7 @@ renderPlot({
 
 ```
 
-
 ### Afli í staðaltogi árið `r now.year`
-
 
 ```{r}
 leaflet::renderLeaflet({
@@ -1092,4 +1092,3 @@ renderPlot({
     ggplot2::scale_color_brewer(palette = "Set1")
 })
 ```
-
