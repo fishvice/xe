@@ -8,16 +8,13 @@ runtime: shiny
 # ------------------------------------------------------------------------------
 # INSTALLATIONS - YOU ONLY NEED TO DO THIS ONCE (ONCE IN A WHILE)
 remotes::install_local("R:/R/Pakkar/mardata", force = TRUE)
+devtools::install_github("fishvice/xe", dependencies = FALSE)
 # The dbplyr package -----------------------------------------------------------
 #   XE grunnurinn er Oracle 11g og því er ekki hægt að nota dbplyr útgáfur >2.0
 #    Því verður að setja inn eldri útgáfu af dbplyr.
 remotes::install_github("tidyverse/dbplyr@v1.4.4", force = TRUE)
-
 # NOTE: This means that one can not load the tidyverse package only its
 #       child packages (dplyr, ggplot2, tidyr, tibble, ....)
-# The usual package ------------------------------------------------------------
-#  Just do:
-devtools::install_github("fishvice/xe", dependencies = FALSE)
 ```
 
 ```{r, eval = FALSE}
@@ -25,24 +22,19 @@ devtools::install_github("fishvice/xe", dependencies = FALSE)
 #       keyrir 'Run Document' þá er þessi kóðabútur ekki keyrður. Þú keyrir
 #       þennan kóðabút eingöngu ef að það eru komnar nýjar upplýsingar í hafvog
 #       sem þú vilt hafa með í smxapp skoðuninni.
-library(DBI)
 library(ROracle)
-# replace 'einarhj' with your username here (as done above)
-library(dbplyr) #, lib.loc = "C:/Users/einarhj/Desktop")
-library(smxapp)
-
 # Specify the synaflokkur using the id and the gear using the gid. E.g.:
 #         id   gid
 # SMB     30    73
 # SMH     35    77, 78
 res <- import_hafvog(id = 35, gid = c(77, 78), year = 2021)
-# Here specify whatever cruise(s) you want to include in the overview
-munge_for_smxapp(res, cruise = c("TM1-2021", "A15-2021"))
 # Timabundið skítamix
-xe:::tbl_mar(xe::connect_xe(), "hafvog.maeliatridi") %>% 
+xe::tbl_xe(xe::connect_xe(), "hafvog.maeliatridi") %>% 
   dplyr::collect() %>% 
   dplyr::select(maeliadgerd = id, heiti) %>% 
   readr::write_rds("data2/maeliatridi.rds")
+# Here specify whatever cruise(s) you want to include in the overview
+munge_for_smxapp(res, cruise = c("TM1-2021", "A15-2021"))
 ```
 
 ```{r global, include=FALSE}
