@@ -27,11 +27,6 @@ library(xe)
 # SMB     30    73
 # SMH     35    77, 78
 res <- xe::import_hafvog(id = 35, gid = c(77, 78), year = 2021)
-# Timabundið skítamix
-xe::tbl_xe(xe::connect_xe(), "hafvog.maeliatridi") %>% 
-  dplyr::collect() %>% 
-  dplyr::select(maeliadgerd = id, heiti) %>% 
-  readr::write_rds("data2/maeliatridi.rds")
 # Here specify whatever cruise(s) you want to include in the overview
 xe::munge_for_smxapp(res, cruise = c("TM1-2021", "A15-2021"))
 ```
