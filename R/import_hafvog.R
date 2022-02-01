@@ -130,6 +130,8 @@ import_hafvog <- function(id = 30, gid = 73, year, merge = TRUE, store = FALSE) 
                     vedur = vedur_nr,
                     sky = sky_nr,
                     sjor = sjor_nr,
+                    botnhiti,
+                    yfirbordshiti,
                     hafis = hafis_nr,
                     straumstefna,
                     straumhradi,
