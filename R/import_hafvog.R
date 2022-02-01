@@ -88,6 +88,7 @@ import_hafvog <- function(id = 30, gid = 73, year, merge = TRUE, store = FALSE) 
 
     st.list[[2]] <-
       mardata::stod %>%
+      dplyr::filter(ar < now.year) %>%
       dplyr::left_join(mardata::syni,
                        by = "stod_id") %>%
       dplyr::filter(synaflokkur_nr %in% id, veidarfaeri %in% gid) %>%

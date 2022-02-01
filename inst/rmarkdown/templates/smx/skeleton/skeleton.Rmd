@@ -26,6 +26,8 @@ library(xe)
 #         id   gid
 # SMB     30    73
 # SMH     35    77, 78
+# year = 2021 acts as a dummy here, since no 2022 data yet. Are kind of
+#  pretending that we are still in the 2021 survey.
 res <- xe::import_hafvog(id = 35, gid = c(77, 78), year = 2021)
 # Here specify whatever cruise(s) you want to include in the overview
 xe::munge_for_smxapp(res, cruise = c("TM1-2021", "A15-2021"))
