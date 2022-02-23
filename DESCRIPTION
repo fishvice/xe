@@ -28,7 +28,7 @@ Imports:
 License: GPL (>= 2)
 LazyData: TRUE
 URL: http://github.com/fishvice/xe
-BugReports: http://github.com/xe/issues
+BugReports: http://github.com/fishvice/xe/issues
 Suggests:
     knitr,
     rmarkdown

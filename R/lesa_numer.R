@@ -7,7 +7,7 @@
 #'
 #' @export
 #'
-lesa_numer <- function(con, schema = "fiskar") {
+lesa_numer <- function(con, schema = "hafvog") {
 
   tbl_xe(con, paste0(schema, ".numer")) %>%
     dplyr::select(synis_id, tegund, fj_maelt, fj_talid, fj_kyngreint,

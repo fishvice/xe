@@ -4,7 +4,7 @@
 \alias{lesa_stodvar}
 \title{Title}
 \usage{
-lesa_stodvar(con, schema = "fiskar")
+lesa_stodvar(con, schema = "hafvog")
 }
 \arguments{
 \item{con}{XX}

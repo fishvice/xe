@@ -4,7 +4,7 @@
 \alias{lesa_numer}
 \title{Title}
 \usage{
-lesa_numer(con, schema = "fiskar")
+lesa_numer(con, schema = "hafvog")
 }
 \arguments{
 \item{con}{XXX}

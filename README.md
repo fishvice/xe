@@ -6,7 +6,9 @@ convenient functions to the MRI Oracle XE-database via R. Unlike the
 mar-database the XE-database resides on personal computers and is what
 the software [hafvog](https://heima.hafro.is/~darri/hafvog_vefur)
 communicates with. The {xe} packages stands on its own and can be used
-for …, further details are provide [here](). To install it do:
+for …, further details are provide
+[here](https://heima.hafro.is/~einarhj/xe/articles/overview_xe.html). To
+install it do:
 
 ``` r
 remotes::install_github("fishvice/xe", dependencies = FALSE)

@@ -7,7 +7,7 @@
 #'
 #' @export
 #'
-lesa_stodvar <- function(con, schema = "fiskar") {
+lesa_stodvar <- function(con, schema = "hafvog") {
 
   tbl_xe(con, paste0(schema, ".stodvar")) %>%
     dplyr::select(synis_id:heildarafli, synaflokkur) %>%

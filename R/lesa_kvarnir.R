@@ -7,7 +7,7 @@
 #'
 #' @export
 #'
-lesa_kvarnir <- function(con, schema = "fiskar") {
+lesa_kvarnir <- function(con, schema = "hafvog") {
 
   tbl_xe(con, paste0(schema, ".kvarnir")) %>%
     dplyr::select(synis_id:kynfaeri, lifur, magi, syking = sy) %>%

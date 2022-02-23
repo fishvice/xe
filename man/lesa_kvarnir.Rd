@@ -4,7 +4,7 @@
 \alias{lesa_kvarnir}
 \title{Title}
 \usage{
-lesa_kvarnir(con, schema = "fiskar")
+lesa_kvarnir(con, schema = "hafvog")
 }
 \arguments{
 \item{con}{XXX}

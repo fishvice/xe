@@ -4,7 +4,7 @@
 \alias{lesa_lengdir}
 \title{Title}
 \usage{
-lesa_lengdir(con, schema = "fiskar")
+lesa_lengdir(con, schema = "hafvog")
 }
 \arguments{
 \item{con}{XXX}

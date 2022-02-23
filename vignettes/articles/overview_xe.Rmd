@@ -1,5 +1,5 @@
 ---
-title: "start"
+title: "The xe package"
 ---
 
 ```{r, include = FALSE}
@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 
 ## Preamble
 
-{xe} allows seamless connection to the MRI Oracle XE-database via R. Unlike the mar-database the XE-database resides on personal computers and is what the software [hafvog](https://heima.hafro.is/~darri/hafvog_vefur) communicates with. The XE-database has at minimum one schema - hafvog. This schema contains all cruises that are visible in the hafvog-software. Normally (now defunct) an additional schema is included in the XE-database - fiskar. This contains a copy of most tables that are stored in schema fiskar in the MRI Oracle mar-database.
+{xe} allows seamless connection to the MRI Oracle XE-database via R. Unlike the mar-database the XE-database resides on personal computers and is what the software [hafvog](https://heima.hafro.is/~darri/hafvog_vefur) communicates with. The XE-database has at minimum one schema - hafvog. This schema contains all cruises that are visible in the hafvog-software.
 
 The {xe] is supposed to mimic a proportion of the functional calls that reside in {mar}
 
@@ -30,7 +30,7 @@ remotes::install_github("fishvice/xe",  dependencies = FALSE, args='--no-multiar
 remotes::install_github("tidyverse/dbplyr@v1.4.4", force = TRUE)
 ```
 
-# Basic functionality
+## Basic functionality
 
 Once an R session is started the connection to xe is done via:
 
@@ -41,6 +41,14 @@ library(xe)
 con <- connect_xe()
 ```
 
+To get an overview of what is available (e.g. in schema hafvog):
+
+```{r}
+xe_tables(con, "hafvog")
+xe_views(con, "hafvog")
+```
+
+
 To access the data in the hafvog-schema (i.e. the cruises currently visible as "Leidangrar" in the Hafvog-software) one simply does:
 ```{r}
 lesa_stodvar(con, schema = "hafvog") %>% glimpse()
@@ -48,19 +56,23 @@ lesa_lengdir(con, schema = "hafvog") %>% glimpse()
 lesa_numer(con, schema = "hafvog")   %>% glimpse()
 ```
 
-To take a peek of what variables are in the data use the `glimpse`-funtion. E.g. 
+If one is interested in working with the data in schema fiskar one simply does:
+
+```{r}
+st.sql <- lesa_stodvar(con)
+le.sql <- lesa_lengdir(con)
+nu.sql <- lesa_numer(con)
+```
+
+
+Take note that in the above the objects xx.sql are not yet local R-dataframes, just an sql-script that also gives a peek at the first 10 records in the database. To take a peek of what variables are in the data use the `glimpse`-funtion. E.g. 
 ```{r}
 glimpse(st.sql)
 ```
 
-If one is interested in working with the data in schema fiskar one simply does:
-```{r}
-st.sql <- lesa_stodvar(con, schema = "fiskar")
-le.sql <- lesa_lengdir(con, schema = "fiskar")
-nu.sql <- lesa_numer(con, schema = "fiskar")
 ```
 
-Take note that in the above the objects xx.sql are not yet local R-dataframes, just an sql-script that also gives a peek at the first 10 records in the database. To create a local dataframe one can import the data via the collect-function. E.g.
+To create a local dataframe one can import the data via the collect-function. E.g.
 
 ```{r}
 st <- st.sql %>% collect(n = Inf)
@@ -69,30 +81,27 @@ st <- st.sql %>% collect(n = Inf)
 In general things then should work the same as in the mar-package, except that lon and lat in the station-table are still in the DDMMmm-format. Here one could use the `geoconvert`-function from the geo-package.
 
 
-# Working with survey data
+## Working with survey data
 
-Here is an example on how one would get the spring survey data from the database into R.
-
-First we provide and import from schema hafvog:
+Here is an example on how one would get all the data from the XE-database into R:
 
 ```{r}
 st.sql <- 
-  lesa_stodvar(con, "hafvog") %>% 
-  filter(synaflokkur == 30)
+  lesa_stodvar(con, "hafvog")
 le <-
   st.sql %>% 
   select(synis_id, ar) %>% 
-  left_join(lesa_lengdir(con, "hafvog")) %>% 
+  left_join(lesa_lengdir(con)) %>% 
   collect(n = Inf)
 nu <- 
   st.sql %>% 
   select(synis_id) %>% 
-  left_join(lesa_numer(con, "hafvog")) %>% 
+  left_join(lesa_numer(con)) %>% 
   collect(n = Inf)
 kv <- 
   st.sql %>% 
   select(synis_id, ar) %>% 
-  left_join(lesa_kvarnir(con, "hafvog")) %>% 
+  left_join(lesa_kvarnir(con)) %>% 
   collect(n = Inf)
 st <- 
   st.sql %>% 

@@ -7,7 +7,7 @@
 #'
 #' @export
 #'
-lesa_lengdir <- function(con, schema = "fiskar") {
+lesa_lengdir <- function(con, schema = "hafvog") {
 
   tbl_xe(con, paste0(schema, ".lengdir")) %>%
     dplyr::select(synis_id:kynthroski) %>%
