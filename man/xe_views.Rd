@@ -12,7 +12,7 @@ xe_views(con, schema)
 \item{schema}{XX}
 }
 \value{
-
+A query
 }
 \description{
 Title
