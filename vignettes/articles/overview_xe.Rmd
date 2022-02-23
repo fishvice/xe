@@ -20,13 +20,13 @@ The {xe] is supposed to mimic a proportion of the functional calls that reside i
 
 ## Installing:
 
-```{r}
+```{r, eval = FALSE}
 remotes::install_github("fishvice/xe",  dependencies = FALSE, args='--no-multiarch')
 ```
 
 **Some small print**: The Oracle XE-database runs on Oracle 11g and thus one can not use {dbplyr} versions >2.0. Hence we need to install and older version:
 
-```{r}
+```{r, eval = FALSE}
 remotes::install_github("tidyverse/dbplyr@v1.4.4", force = TRUE)
 ```
 
@@ -50,31 +50,32 @@ xe_views(con, "hafvog")
 
 
 To access the data in the hafvog-schema (i.e. the cruises currently visible as "Leidangrar" in the Hafvog-software) one simply does:
+
 ```{r}
-lesa_stodvar(con, schema = "hafvog") %>% glimpse()
-lesa_lengdir(con, schema = "hafvog") %>% glimpse()
-lesa_numer(con, schema = "hafvog")   %>% glimpse()
+lesa_stodvar(con) %>% glimpse()
+lesa_lengdir(con) %>% glimpse()
+lesa_numer(con)   %>% glimpse()
 ```
 
 If one is interested in working with the data in schema fiskar one simply does:
 
 ```{r}
-st.sql <- lesa_stodvar(con)
-le.sql <- lesa_lengdir(con)
-nu.sql <- lesa_numer(con)
+st.sql <- lesa_stodvar(con, schema = "fiskar")
+le.sql <- lesa_lengdir(con, schema = "fiskar")
+nu.sql <- lesa_numer(con, schema = "fiskar")
 ```
 
 
 Take note that in the above the objects xx.sql are not yet local R-dataframes, just an sql-script that also gives a peek at the first 10 records in the database. To take a peek of what variables are in the data use the `glimpse`-funtion. E.g. 
+
 ```{r}
 glimpse(st.sql)
 ```
 
-```
 
 To create a local dataframe one can import the data via the collect-function. E.g.
 
-```{r}
+```{r, eval = FALSE}
 st <- st.sql %>% collect(n = Inf)
 ```
 
@@ -87,7 +88,7 @@ Here is an example on how one would get all the data from the XE-database into R
 
 ```{r}
 st.sql <- 
-  lesa_stodvar(con, "hafvog")
+  lesa_stodvar(con)
 le <-
   st.sql %>% 
   select(synis_id, ar) %>% 

@@ -10,13 +10,13 @@ knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 
 The purpose of the {xe} package is to create a connection and some convenient functions to the MRI Oracle XE-database via R. Unlike the mar-database the XE-database resides on personal computers and is what the software [hafvog](https://heima.hafro.is/~darri/hafvog_vefur) communicates with. The {xe} packages stands on its own and can be used for ..., further details are provide [here](https://heima.hafro.is/~einarhj/xe/articles/overview_xe.html). To install it do:
 
-```{r}
+```{r, eval = FALSE}
 remotes::install_github("fishvice/xe", dependencies = FALSE)
 ```
 
 **As of 2022-02-22 the version of Hafvog is 4.1.8, including the setup (stillingar) and support tables (stoðtöflur).** Since the XE database is run on Oracle 11g one can not not use dbplyr versions >2.0. Hence we need to install older versions:
 
-```{r}
+```{r, eval = FALSE}
 remotes::install_github("tidyverse/dbplyr@v1.4.4", force = TRUE)
 ```
 
@@ -24,7 +24,7 @@ remotes::install_github("tidyverse/dbplyr@v1.4.4", force = TRUE)
 
 The most common usage of the {xe} packages is to serve as a basis for the "smxapp", a quality control shiny app that is used during the conduction of the Icelandic bottom trawl surveys. In order to provide also a historical comparisons older archieved survey data must also be available. These reside (as of 2022) in the {mardata} package. Since these data are not publicly available as of yet, that package is not distributed on github but rather internally ... To install it do:
 
-```{r}
+```{r, eval = FALSE}
 remotes::install_local("R:/R/Pakkar/mardata", force = TRUE)
 ```
 
