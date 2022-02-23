@@ -1,4 +1,15 @@
 
+# Before you do anything else
+
+**Update all your stuff** The safest way in windose is described on
+[gitlab](https://gitlab.hafogvatn.is/-/snippets/3). If you only want to
+update packages (not R, RStudio etc.) then as described on gitlab do:
+
+``` r
+options(repos = c(CRAN = "https://cran.hafro.is"))
+update.packages(ask=FALSE, checkBuilt = TRUE,lib=Sys.getenv("R_LIBS_USER"))
+```
+
 # The quick installation guide
 
 The purpose of the {xe} package is to create a connection and some

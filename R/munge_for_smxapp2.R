@@ -8,7 +8,6 @@
 #' @param rda.file name the exported binary file (default smb_dashboard.rda)
 #' which is stored in the directory data2
 #'
-#' @export
 #'
 munge_for_smxapp2 <- function(res, cruise, rda.file = "smb_dashboard.rda") {
 
