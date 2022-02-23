@@ -12,5 +12,12 @@ knitr::opts_chunk$set(
 )
 ```
 
-...
+# Notes
 
+The smxapp is just an .Rmd shiny template. One can obtain it via RStudio by:
+
+```
+File -> New File -> R Markdown -> From template -> smx dashboard
+```
+
+It depends on the {xe} and {mardata} packages, the installation guide for those is provided in the [README file](https://heima.hafro.is/~einarhj/xe)
