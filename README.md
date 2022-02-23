@@ -11,7 +11,7 @@ for …, further details are provide
 install it do:
 
 ``` r
-remotes::install_github("fishvice/xe", dependencies = FALSE)
+remotes::install_github("fishvice/xe",  dependencies = FALSE, args='--no-multiarch')
 ```
 
 **As of 2022-02-22 the version of Hafvog is 4.1.8, including the setup
