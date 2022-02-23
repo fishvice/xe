@@ -1,103 +1,52 @@
 
-# Communicating with hafvog
+# The quick installation guide
 
-## Preamble
-
-{xe} allows seamless connection to the MRI Oracle XE-database via R.
-Unlike the mar-database the XE-database resides on personal computers
-and is what the software **hafvog** communicates with. The XE-database
-has at minimum one schema - hafvog. This schema contains all cruises
-that are visible in the hafvog-software. Normally (now defunct) an
-additional schema is included in the XE-database - fiskar. This contains
-a copy of most tables that are stored in schema fiskar in the MRI Oracle
-mar-database.
-
-The {xe\] is supposed to mimic a proportion of the functional calls that
-reside in {mar}
-
-## Installing:
+The purpose of the {xe} package is to create a connection and some
+convenient functions to the MRI Oracle XE-database via R. Unlike the
+mar-database the XE-database resides on personal computers and is what
+the software [hafvog](https://heima.hafro.is/~darri/hafvog_vefur)
+communicates with. The {xe} packages stands on its own and can be used
+for …, further details are provide [here](). To install it do:
 
 ``` r
-devtools::install_github("fishvice/xe",  dependencies = FALSE, args='--no-multiarch')
+remotes::install_github("fishvice/xe", dependencies = FALSE)
 ```
 
-# Basic functionality
-
-Once an R session is started the connection to xe is done via:
+**As of 2022-02-22 the version of Hafvog is 4.1.8, including the setup
+(stillingar) and support tables (stoðtöflur).** Since the XE database is
+run on Oracle 11g one can not not use dbplyr versions \>2.0. Hence we
+need to install older versions:
 
 ``` r
-library(tidyverse)
-library(ROracle)
-library(xe)
-con <- connect_xe()
+remotes::install_github("tidyverse/dbplyr@v1.4.4", force = TRUE)
 ```
 
-To access the data in the hafvog-schema (i.e. the cruises currently
-visible as “Leidangrar” in the Hafvog-software) one simply does:
+**Side effects**: Installing an earlier version of {dbplyr} means that
+one can not load the tidyverse package only its child packages (dplyr,
+ggplot2, tidyr, tibble, ….). It also means that if you want to access
+data on the main Oracle database via {mar} one has to reinstall the
+latest version of {dbplyr}. By `install.packages("dbplyr"}` one
+overwrites {dbplyr} version 1.4.4 with the latest one available on cran.
+
+The most common usage of the {xe} packages is to serve as a basis for
+the “smxapp”, a quality control shiny app that is used during the
+conduction of the Icelandic bottom trawl surveys. In order to provide
+also a historical comparisons older archieved survey data must also be
+available. These reside (as of 2022) in the {mardata} package. Since
+these data are not publicly available as of yet, that package is not
+distributed on github but rather internally … To install it do:
 
 ``` r
-st.sql <- lesa_stodvar(con, schema = "hafvog")
-le.sql <- lesa_lengdir(con, schema = "hafvog")
-nu.sql <- lesa_numer(con, schema = "hafvog")
+remotes::install_local("R:/R/Pakkar/mardata", force = TRUE)
 ```
 
-To take a peek of what variables are in the data use the
-`glimpse`-funtion. E.g.
+**Note**: This assumes that you are connected to MFRI instute network,
+either at the office or via VPN. Hence it is strongly suggested that you
+install this package prior to leaving on a cruise.
 
-``` r
-glimpse(st.sql)
-```
+## The smxapp
 
-If one is interested in working with the data in schema fiskar one
-simply does:
+A template for the smxapp is available via the {xe} package. To access
+the template one does as follows within RStudio:
 
-``` r
-st.sql <- lesa_stodvar(con, schema = "fiskar")
-le.sql <- lesa_lengdir(con, schema = "fiskar")
-nu.sql <- lesa_numer(con, schema = "fiskar")
-```
-
-Take note that in the above the objects xx.sql are not yet local
-R-dataframes, just an sql-script that also gives a peek at the first 10
-records in the database. To create a local dataframe one can import the
-data via the collect-function. E.g.
-
-``` r
-st <- st.sql %>% collect(n = Inf)
-```
-
-In general things then should work the same as in the mar-package,
-except that lon and lat in the station-table are still in the
-DDMMmm-format. Here one could use the `geoconvert`-function from the
-geo-package.
-
-# Working with survey data
-
-Here is an example on how one would get the spring survey data from the
-database into R.
-
-First we provide and import from schema hafvog:
-
-``` r
-st.sql <- 
-  lesa_stodvar(con, "hafvog") %>% 
-  filter(synaflokkur == 30)
-le <-
-  st.sql %>% 
-  select(synis_id, ar) %>% 
-  left_join(lesa_lengdir(con, "hafvog")) %>% 
-  collect(n = Inf)
-nu <- 
-  st.sql %>% 
-  select(synis_id) %>% 
-  left_join(lesa_numer(con, "hafvog")) %>% 
-  collect(n = Inf)
-kv <- 
-  st.sql %>% 
-  select(synis_id, ar) %>% 
-  left_join(lesa_kvarnir(con, "hafvog")) %>% 
-  collect(n = Inf)
-st <- 
-  st.sql %>% 
-  collect(n = Inf)
-```
+    File -> New File -> R Markdown -> From template -> smx dashboard
