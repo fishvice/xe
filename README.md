@@ -57,6 +57,12 @@ remotes::install_local("R:/R/Pakkar/mardata", force = TRUE)
 either at the office or via VPN. Hence it is strongly suggested that you
 install this package prior to leaving on a cruise.
 
+You may also need:
+
+``` r
+remotes::install_github("einarhjorleifsson/gisland",  dependencies = FALSE)
+```
+
 ## The smxapp
 
 A template for the smxapp is available via the {xe} package. To access

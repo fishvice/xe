@@ -40,6 +40,13 @@ remotes::install_local("R:/R/Pakkar/mardata", force = TRUE)
 
 **Note**: This assumes that you are connected to MFRI instute network, either at the office or via VPN. Hence it is strongly suggested that you install this package prior to leaving on a cruise.
 
+You may also need:
+
+```{r, eval = FALSE}
+remotes::install_github("einarhjorleifsson/gisland",  dependencies = FALSE)
+```
+
+
 
 ## The smxapp
 
