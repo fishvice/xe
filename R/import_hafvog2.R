@@ -240,8 +240,9 @@ import_hafvog2 <- function(id = 30, year, merge = TRUE, store = FALSE) {
     dplyr::select(tegund, lengd, osl1:sl2)
 
   fisktegundir <-
-    tbl_xe(con, "hafvog.fisktegundir") %>%
-    dplyr::select(tegund, heiti) %>%
+    #tbl_xe(con, "hafvog.fisktegundir") %>%
+    tbl_xe(con, "hafvog.species_v") %>%
+    dplyr::select(tegund = species_no, heiti = name) %>%
     dplyr::arrange(tegund) %>%
     dplyr::collect(n = Inf)
 
@@ -251,12 +252,17 @@ import_hafvog2 <- function(id = 30, year, merge = TRUE, store = FALSE) {
     dplyr::rename(aid = id, adgerd = heiti) %>%
     dplyr::collect(n = Inf)
   sid <-
-    tbl_xe(con, "hafvog.fisktegundir") %>%
-    dplyr::select(sid = tegund, tegund = heiti) %>%
+    #tbl_xe(con, "hafvog.fisktegundir") %>%
+    tbl_xe(con, "hafvog.species_v") %>%
+    dplyr::select(sid = species_no, tegund = name) %>%
     dplyr::arrange(tegund) %>%
     dplyr::collect(n = Inf)
   prey_names <-
-    tbl_xe(con, "hafvog.f_tegundir") %>%
+    #tbl_xe(con, "hafvog.f_tegundir") %>%
+    tbl_xe(con, "hafvog.species_v") %>%
+    dplyr::select(faeduhopur = food_no, lat_heiti = sci_name,
+                  isl_heiti = name,
+                  tegund = species_no) %>%
     dplyr::collect(n = Inf)
 
 
