@@ -1,14 +1,13 @@
 #' Import data from the Oracle xe-database
 #'
 #' @param id synaflokkur. Default is set to 30
-#' @param gid veidarfaeri. Default is set to 73
 #' @param year Current cruise year. If not specificed (default) use current (computer) year.
 #' @param merge A boolean, if TRUE (default) merge (some) data from {mardata}
 #' @param store A boolean, if TRUE then the returned returned object is also
 #' saved as hafvog.rds in directory data
 #'
 #' @export
-import_hafvog2 <- function(id = 30, gid = 73, year, merge = TRUE, store = FALSE) {
+import_hafvog2 <- function(id = 30, year, merge = TRUE, store = FALSE) {
 
   schema <- "hafvog"
   #hv_pred <- xe:::hv_pred
@@ -36,12 +35,10 @@ import_hafvog2 <- function(id = 30, gid = 73, year, merge = TRUE, store = FALSE)
 
   st <-
     lesa_stodvar(con, schema[i]) %>%
-    dplyr::filter(synaflokkur %in% id) %>%
-    # Just a temporary fix
-    dplyr::filter(veidarfaeri %in% gid | is.na(veidarfaeri))
+    dplyr::filter(synaflokkur %in% id)
 
   if(st %>% dplyr::count() %>% dplyr::collect() == 0) {
-    stop("There is no data for specified 'synaflokkur' (id) and 'veidarfaeri' (gid)")
+    stop("There is no data for specified 'synaflokkur'")
   }
 
   st <-
@@ -93,7 +90,7 @@ import_hafvog2 <- function(id = 30, gid = 73, year, merge = TRUE, store = FALSE)
       dplyr::filter(ar < now.year) %>%
       dplyr::left_join(mardata::syni,
                        by = "stod_id") %>%
-      dplyr::filter(synaflokkur_nr %in% id, veidarfaeri %in% gid) %>%
+      dplyr::filter(synaflokkur_nr %in% id) %>%
       dplyr::mutate(index = reitur * 100 + tog_nr) %>%
       dplyr::select(synis_id,
                     leidangur,
@@ -203,7 +200,6 @@ import_hafvog2 <- function(id = 30, gid = 73, year, merge = TRUE, store = FALSE)
                        dplyr::select(synis_id:sjondypi), by = "synis_id") %>%
     dplyr::mutate(index = reitur * 100 + tognumer) %>%
     dplyr::filter(synaflokkur %in% id,
-                  veidarfaeri %in% gid,
                   ar == now.year) %>%
     dplyr::select(synis_id) %>%
     dplyr::left_join(tbl_xe(con, "hafvog.skraning"),
@@ -217,8 +213,7 @@ import_hafvog2 <- function(id = 30, gid = 73, year, merge = TRUE, store = FALSE)
 
   stadlar.rallstodvar <-
     lesa_stadla_rallstodvar(con) %>%
-    dplyr::filter(veidarfaeri_id %in% gid,
-                  synaflokkur %in% id) %>%
+    dplyr::filter(synaflokkur %in% id) %>%
     dplyr::collect(n = Inf) %>%
     # fix an error in hift_v for SMH, should be corrected in database
     dplyr::mutate(hift_v = ifelse(hift_v == -2444550, -244455, hift_v)) %>%

@@ -15,17 +15,22 @@ remotes::install_local("R:/R/Pakkar/mardata", force = TRUE)
 ```{r get_data, eval = FALSE}
 library(ROracle)
 library(xe)
+# 2022-02-23:
+#            import_hafvog2 is a temporary function, because veidarfaeri is NA
+#            (some problem between different versions of hafvog - historical though
+#             should not be a problem for new data in 2022)
 # Specify the synaflokkur using the id and the gear using the gid. E.g.:
-#         id   gid
-# SMB     30    73
-# SMH     35    77, 78
-# year = 2021 acts as a dummy below, since no 2022 data yet. Are kind of
-#  pretending that we are still in the SMH 2021 survey.
-#  NOTE: In normal "live operation", year is not filled in the arguement
-res <- xe::import_hafvog(id = 35, gid = c(77, 78), year = 2021)
+#         id 
+# SMB     30
+# SMH     35
+res <- import_hafvog2(id = 30)
+# just a quick fix
+res$st <- 
+  res$st %>% 
+  dplyr::mutate(veidarfaeri = ifelse(is.na(veidarfaeri), 73, veidarfaeri))
 # Here specify whatever cruise(s) you want to include.
-#  Make sure that these cruises are in your Hafvog, change accodingly
-xe::munge_for_smxapp(res, cruise = c("TM1-2021", "A15-2021"))
+#  Make sure that these cruises are in your Hafvog, change accordingly
+xe::munge_for_smxapp(res, cruise = c("TESTO-2022"))
 ```
 
 
@@ -937,7 +942,7 @@ Column {.tabset}
 
 leaflet::renderLeaflet({
   p <-
-    leaflet::leaflet(stadlar.rallstodvar.sp) %>% 
+    leaflet::leaflet(stadlar.rallstodvar.sf) %>% 
     leaflet::addTiles() %>% 
     leaflet::addPolylines(color = "red", weight = 10)
   years <- as.character(now.year:(now.year - 3))
@@ -946,13 +951,13 @@ leaflet::renderLeaflet({
     if(i == 1) {
       p <-
         p %>% 
-        leaflet::addPolylines(data = st.done.sp[st.done.sp$ar == years[i],],
+        leaflet::addPolylines(data = st.done.sf[st.done.sf$year == years[i],],
                      group = years[i],
-                     label = ~htmltools::htmlEscape(as.character(synis_id)))
+                     label = ~htmltools::htmlEscape(as.character(index)))
     } else {
       p <-
         p %>% 
-        leaflet::addPolylines(data = st.done.sp[st.done.sp$ar == years[i],],
+        leaflet::addPolylines(data = st.done.sf[st.done.sf$year == years[i],],
                      group = years[i])
     }
   }
