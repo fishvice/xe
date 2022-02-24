@@ -6,10 +6,10 @@ runtime: shiny
 
 ```{r installations, eval = FALSE}
 # INSTALLATIONS - YOU ONLY NEED TO DO THIS ONCE (ONCE IN A WHILE) --------------
-remotes::install_github("fishvice/xe", dependencies = FALSE)
 remotes::install_github("einarhjorleifsson/gisland", dependencies = FALSE)
-remotes::install_github("tidyverse/dbplyr@v1.4.4", force = TRUE)
 remotes::install_local("R:/R/Pakkar/mardata", force = TRUE)
+remotes::install_github("fishvice/xe", dependencies = FALSE)
+remotes::install_github("tidyverse/dbplyr@v1.4.4", force = TRUE)
 # further info, see: https://heima.hafro.is/~einarhj/xe/
 ```
 
