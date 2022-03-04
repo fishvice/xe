@@ -39,73 +39,58 @@ library(dplyr)
 library(ROracle)
 library(xe)
 con <- connect_xe()
+# you should now have something like this:
+con
 ```
+
 
 To get an overview of what is available (e.g. in schema hafvog):
 
 ```{r}
 xe_tables(con, "hafvog")
-xe_views(con, "hafvog")
+xe_views(con, "hafvog") %>% collect()
 ```
 
+We have a bit of an issue here, some of the tables and views are no longer used in the latest Havog (>4), but still retained in case revertion to Hafvog <4 is needed.
 
-To access the data in the hafvog-schema (i.e. the cruises currently visible as "Leidangrar" in the Hafvog-software) one simply does:
+To access any of the tables or views one simply does:
 
 ```{r}
+tbl_xe(con, "hafvog.lengdir")
+```
+
+For this view a convenient function, "lesa_lengdir" is available:
+
+```{r}
+lesa_lengdir(con)
+```
+
+(synis_id is here negative, just to ensure that there is no clash with older data that we may want the merge with the recently collected data).
+
+We have these main convenient functions:
+
+```{r}
+# not run
 lesa_stodvar(con) %>% glimpse()
-lesa_lengdir(con) %>% glimpse()
+lesa_lengdir(con)
 lesa_numer(con)   %>% glimpse()
+lesa_kvarnir(con) %>% glimpse()
 ```
 
-If one is interested in working with the data in schema fiskar one simply does:
+The above are actually views of the data. The actual data are stored in table hafvog.skraning
 
 ```{r}
-st.sql <- lesa_stodvar(con, schema = "fiskar")
-le.sql <- lesa_lengdir(con, schema = "fiskar")
-nu.sql <- lesa_numer(con, schema = "fiskar")
+tbl_xe(con, "hafvog.skraning")  %>% glimpse()
 ```
 
 
-Take note that in the above the objects xx.sql are not yet local R-dataframes, just an sql-script that also gives a peek at the first 10 records in the database. To take a peek of what variables are in the data use the `glimpse`-funtion. E.g. 
+If we want to get measurements taken in a particular cruise one could do:
 
 ```{r}
-glimpse(st.sql)
-```
-
-
-To create a local dataframe one can import the data via the collect-function. E.g.
-
-```{r, eval = FALSE}
-st <- st.sql %>% collect(n = Inf)
-```
-
-In general things then should work the same as in the mar-package, except that lon and lat in the station-table are still in the DDMMmm-format. Here one could use the `geoconvert`-function from the geo-package.
-
-
-## Working with survey data
-
-Here is an example on how one would get all the data from the XE-database into R:
-
-```{r}
-st.sql <- 
-  lesa_stodvar(con)
-le <-
-  st.sql %>% 
-  select(synis_id, ar) %>% 
-  left_join(lesa_lengdir(con)) %>% 
-  collect(n = Inf)
-nu <- 
-  st.sql %>% 
-  select(synis_id) %>% 
-  left_join(lesa_numer(con)) %>% 
-  collect(n = Inf)
-kv <- 
-  st.sql %>% 
-  select(synis_id, ar) %>% 
-  left_join(lesa_kvarnir(con)) %>% 
-  collect(n = Inf)
-st <- 
-  st.sql %>% 
-  collect(n = Inf)
+lesa_stodvar(con) %>% 
+  filter(leidangur == "TB1-2022") %>% 
+  select(synis_id, stod, reitur, tognumer) %>% 
+  # need to fix this
+  left_join(lesa_skraning(con) %>% mutate(synis_id = -synis_id))
 ```
 
