@@ -4,12 +4,10 @@
 \alias{import_hafvog2}
 \title{Import data from the Oracle xe-database}
 \usage{
-import_hafvog2(id = 30, gid = 73, year, merge = TRUE, store = FALSE)
+import_hafvog2(id = 30, year, merge = TRUE, store = FALSE)
 }
 \arguments{
 \item{id}{synaflokkur. Default is set to 30}
-
-\item{gid}{veidarfaeri. Default is set to 73}
 
 \item{year}{Current cruise year. If not specificed (default) use current (computer) year.}
 

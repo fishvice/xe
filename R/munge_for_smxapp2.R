@@ -57,10 +57,10 @@ munge_for_smxapp2 <- function(res, cruise, rda.file = "smb_dashboard.rda") {
                     show_col_types = FALSE) %>%
     tibble::as_tibble() %>%
     dplyr::rename(gid = vid) %>%
-    dplyr::mutate(lon1 = -gisland::geo_convert(lon1),
-                  lon2 = -gisland::geo_convert(lon2),
-                  lat1 =  gisland::geo_convert(lat1),
-                  lat2 =  gisland::geo_convert(lat2)) %>%
+    dplyr::mutate(lon1 = -geo_convert(lon1),
+                  lon2 = -geo_convert(lon2),
+                  lat1 =  geo_convert(lat1),
+                  lat2 =  geo_convert(lat2)) %>%
     dplyr::mutate(lon2 = ifelse(square == 424 & townumber == 3, -24.7583, lon2))
 
 
