@@ -88,7 +88,7 @@ If we want to get measurements taken in a particular cruise one could do:
 
 ```{r}
 lesa_stodvar(con) %>% 
-  filter(leidangur == "TESTO-2022") %>% 
+  filter(leidangur == "TB1-2022") %>% 
   select(synis_id, stod, reitur, tognumer) %>% 
   # need to fix this
   left_join(lesa_skraning(con) %>% mutate(synis_id = -synis_id))
