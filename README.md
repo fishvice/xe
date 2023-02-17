@@ -1,29 +1,5 @@
 
-# Before you do anything else
-
-If you only want to update packages (not R, RStudio etc.) then:
-
-0)  This is just a generic recomendation when working in RStudio:
-
--   Go to Tools -\> Global option … -\> General
-    -   Make sure that “Restore .RData into workspace at startup” is
-        **not selected**
-    -   Set “Save workspace to .RData on exit” to “**Never**”
--   Go to Tools -\> Global option … -\> R Markdown
-    -   Make sure that “Show output inline for all R Markdown documents”
-        is **not selected**
-
-1)  Make sure you have only one RStudio open and that it is a “fresh”
-    session
-2)  Do as described on
-    [gitlab](https://gitlab.hafogvatn.is/-/snippets/3):
-
-``` r
-options(repos = c(CRAN = "https://cran.hafro.is"))
-update.packages(ask=FALSE, checkBuilt = TRUE,lib=Sys.getenv("R_LIBS_USER"))
-```
-
-# The quick installation guide
+# The installation
 
 The most common usage of the {xe} packages is to serve as a basis for
 the “smxapp”, a quality control shiny app that is used during the
@@ -77,13 +53,39 @@ the template one does as follows within RStudio:
 
     File -> New File -> R Markdown -> From template -> smx dashboard
 
-## 2022 SMB testfile
+## 2023 SMB testfile
 
 A test file is availble on hafro ftp-site, you can download it directly
 via:
 
 ``` r
-download.file("ftp.hafro.is/pub/data/TB1-2022.zip", destfile = "TB1-2022.zip")
+download.file("ftp.hafro.is/pub/data/TESTO", destfile = "TB1-2022.zip")
 ```
 
-.. or you can use Filezilla and the non-reproducable mouse-click method.
+Read this file into “hafvog” and then run the top code snippet in the
+smx dashboard. Once done you should be able to Run the smx dashboard and
+see example of the 2023 dummy results. If no errors pop up you are ready
+to go out to sea.
+
+# A general recommendation on RStudio setup
+
+0)  This is just a generic recomendation when working in RStudio:
+    - Go to Tools -\> Global option … -\> General
+      - Make sure that “Restore .RData into workspace at startup” is
+        **not selected**
+      - Set “Save workspace to .RData on exit” to “**Never**”
+    - Go to Tools -\> Global option … -\> R Markdown
+      - Make sure that “Show output inline for all R Markdown documents”
+        is **not selected**
+
+# A general recomendation on updating packages
+
+1)  Make sure you have only one RStudio open and that it is a “fresh”
+    session
+2)  Do as described on
+    [gitlab](https://gitlab.hafogvatn.is/-/snippets/3):
+
+``` r
+options(repos = c(CRAN = "https://cran.hafro.is"))
+update.packages(ask=FALSE, checkBuilt = TRUE,lib=Sys.getenv("R_LIBS_USER"))
+```
