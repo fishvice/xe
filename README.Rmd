@@ -33,18 +33,30 @@ remotes::install_github("tidyverse/dbplyr@v1.4.4", force = TRUE)
 
 # The smxapp
 
-A template for the smxapp is available via the {xe} package. To access the template one does as follows within RStudio:
+Suggest you do:
 
+* Create a new project (i.e. a directory) in RStudio for the current year (here I will just call it SMB)
+* Create a directory data2 within that directory
+  * In this directory data from Hafvog will be writen that is then used when "Run"-ing the app
+* A template for the smxapp is available via the {xe} package. To access the template one does as follows within RStudio:
 ```
 File -> New File -> R Markdown -> From template -> smx dashboard
 ```
+* Save this template as e.g  SMB-2023.Rmd in the root directory of the project (which I called just SMB aka above)
+* Run the top code-chunk of the document (the last line is 'munge_for_smxapp'. Do not run the rest of the document, that happens in the next step below.
+  * What happens is that some files in the data2-directory get created/are updated.
+* Once done, press 'Run Document' and you should have some pretty pictures.
+
+Note: If you have added data to the xe-database you need to run the top code-chunk again. If not you can just press 'Run Document' at your leasure.
+
+
 
 ## 2023 SMB testfile
 
 A test file is availble on hafro ftp-site, you can download it directly via:
 
 ```{r, eval = FALSE}
-download.file("ftp.hafro.is/pub/data/TESTO", destfile = "TB1-2022.zip")
+download.file("ftp.hafro.is/pub/data/TESTO-2023.zip", destfile = "TESTO-2023.zip")
 ```
 
 Read this file into "hafvog" and then run the top code snippet in the smx dashboard. Once done you should be able to Run the smx dashboard and see example of the 2023 dummy results. If no errors pop up you are ready to go out to sea. 
