@@ -37,9 +37,9 @@ import_hafvog2 <- function(id = 30, year, merge = TRUE, store = FALSE) {
     lesa_stodvar(con, schema[i]) %>%
     dplyr::filter(synaflokkur %in% id)
 
-  if(st %>% dplyr::count() %>% dplyr::collect() == 0) {
-    stop("There is no data for specified 'synaflokkur'")
-  }
+  # if(st %>% dplyr::count() %>% dplyr::collect() == 0) {
+  #   stop("There is no data for specified 'synaflokkur'")
+  # }
 
   st <-
     st %>%
