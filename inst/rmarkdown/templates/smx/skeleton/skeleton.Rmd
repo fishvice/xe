@@ -16,6 +16,11 @@ remotes::install_github("tidyverse/dbplyr@v1.4.4", force = TRUE)
 # RUN THIS CHUNK line-by-line EACH TIME YOU HAVE GOTTEN NEW DATA IN HAFVOG
 library(ROracle)
 library(xe)
+# 2023-09-26: NEW
+#             Create the connection the database
+#             Old setup: dbname = "xe"      (Klara)
+#             New setup: dbname = "XEPDB1"  (Valur, Hlynur)
+con <- connect_oracle(dbname = "xe")
 # 2022-02-23:
 #            import_hafvog2 is a temporary function, because veidarfaeri is NA
 #            (some problem between different versions of hafvog - historical though
@@ -24,7 +29,7 @@ library(xe)
 #         id 
 # SMB     30
 # SMH     35
-res <- import_hafvog2(id = 30)
+res <- import_hafvog3(id = 35, con = con)
 # just a quick fix
 res$st <- 
   res$st %>% 
