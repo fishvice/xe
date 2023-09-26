@@ -293,7 +293,7 @@ import_hafvog3 <- function(id = 30, con, year, merge = TRUE, store = FALSE) {
 
   if(!dir.exists("data2")) dir.create("data2")
   # Timabundið skítamix
-  xe::tbl_xe(xe::connect_xe(), "hafvog.maeliatridi") %>%
+  xe::tbl_xe(con, "hafvog.maeliatridi") %>%
     dplyr::collect() %>%
     dplyr::select(maeliadgerd = id, heiti) %>%
     readr::write_rds("data2/maeliatridi.rds")
