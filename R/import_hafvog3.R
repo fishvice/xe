@@ -218,6 +218,8 @@ import_hafvog3 <- function(id = 30, con, year, merge = TRUE, store = FALSE) {
     lesa_stadla_rallstodvar(con) %>%
     dplyr::filter(synaflokkur %in% id) %>%
     dplyr::collect(n = Inf) %>%
+    # 2023-09-30 Quick fix
+    dplyr::filter(!is.na(hift_v)) |>
     # fix an error in hift_v for SMH, should be corrected in database
     dplyr::mutate(hift_v = ifelse(hift_v == -2444550, -244455, hift_v)) %>%
     geo::geoconvert(col.names = c("kastad_v", "kastad_n")) %>%
