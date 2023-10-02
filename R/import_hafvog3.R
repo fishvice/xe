@@ -222,6 +222,7 @@ import_hafvog3 <- function(id = 30, con, year, merge = TRUE, store = FALSE) {
     dplyr::filter(!is.na(hift_v)) |>
     # fix an error in hift_v for SMH, should be corrected in database
     dplyr::mutate(hift_v = ifelse(hift_v == -2444550, -244455, hift_v)) %>%
+    dplyr::mutate(hift_n = ifelse(hift_n ==  6537038,  653703, hift_n)) %>%
     geo::geoconvert(col.names = c("kastad_v", "kastad_n")) %>%
     geo::geoconvert(col.names = c("hift_v",   "hift_n"))
 
